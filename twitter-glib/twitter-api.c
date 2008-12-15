@@ -25,108 +25,110 @@
 
 #include "twitter-api.h"
 
+#define TWITTER_HOST "http://twitter.com"
+
 /* @param (optional): since_id=%u, status id*/
 #define TWITTER_API_PUBLIC_TIMELINE             \
-        "http://twitter.com/statuses/public_timeline.json"
+        TWITTER_HOST "/statuses/public_timeline.json"
 
 /* @param (optional): since=%s, http date (If-Modified-Since) */
 #define TWITTER_API_FRIENDS_TIMELINE            \
-        "http://twitter.com/statuses/friends_timeline.json"
+        TWITTER_HOST "/statuses/friends_timeline.json"
 
 /* @param (required): id=%s, user id */
 /* @param (optional): since=%s, http date (If-Modified-Since) */
 #define TWITTER_API_FRIENDS_TIMELINE_ID         \
-        "http://twitter.com/statuses/friends_timeline/%s.json"
+        TWITTER_HOST "/statuses/friends_timeline/%s.json"
 
 /* @param (optional): since=%s, http date (If-Modified-Since) */
 /* @param (optional): count=%u, number of items (< 20) */
 #define TWITTER_API_USER_TIMELINE               \
-        "http://twitter.com/statuses/user_timeline.json"
+        TWITTER_HOST "/statuses/user_timeline.json"
 
 /* @param (required): id=%s, user id */
 /* @param (optional): since=%s, http date (If-Modified-Since) */
 /* @param (optional): count=%u, number of items (< 20) */
 #define TWITTER_API_USER_TIMELINE_ID            \
-        "http://twitter.com/statuses/user_timeline/%s.json"
+        TWITTER_HOST "/statuses/user_timeline/%s.json"
 
 #define TWITTER_API_STATUS_SHOW                 \
-        "http://twitter.com/statuses/show/%u.json"
+        TWITTER_HOST "/statuses/show/%u.json"
 
 /* @param (required): post=%s (POST), status text (< 160 chars, encoded) */
 #define TWITTER_API_UPDATE                      \
-        "http://twitter.com/statuses/update.json"
+        TWITTER_HOST "/statuses/update.json"
 
 /* @param (optional): page=%u, page number */
 #define TWITTER_API_REPLIES                     \
-        "http://twitter.com/statuses/replies.json"
+        TWITTER_HOST "/statuses/replies.json"
 
 #define TWITTER_API_DESTROY                     \
-        "http://twitter.com/statuses/destroy/%u.json"
+        TWITTER_HOST "/statuses/destroy/%u.json"
 
 /* @param (optional): lite=true, no status */
 /* @param (optional): page=%u, page number */
 #define TWITTER_API_FRIENDS                     \
-        "http://twitter.com/statuses/friends.json"
+        TWITTER_HOST "/statuses/friends.json"
 
 /* @param (required): id=%s, user id */
 /* @param (optional): lite=true, no status */
 /* @param (optional): page=%u, page number */
 #define TWITTER_API_FRIENDS_ID                  \
-        "http://twitter.com/statuses/friends/%s.json"
+        TWITTER_HOST "/statuses/friends/%s.json"
 
 /* @param (optional): lite=true, no status */
 /* @param (optional): page=%u, page number */
 #define TWITTER_API_FOLLOWERS                   \
-        "http://twitter.com/statuses/followers.json"
+        TWITTER_HOST "/statuses/followers.json"
 
 #define TWITTER_API_FEATURED                    \
-        "http://twitter.com/statuses/featured.json"
+        TWITTER_HOST "/statuses/featured.json"
 
 /* @param (required): id=user id or screen name */
 #define TWITTER_API_USER_SHOW_ID                \
-        "http://twitter.com/users/show/%s.json"
+        TWITTER_HOST "/users/show/%s.json"
 
 #define TWITTER_API_USER_SHOW                   \
-        "http://twitter.com/users/show.json"
+        TWITTER_HOST "/users/show.json"
 
 #define TWITTER_API_DIRECT_MESSAGES             \
-        "http://twitter.com/direct_messages.json"
+        TWITTER_HOST "/direct_messages.json"
 #define TWITTER_API_DIRECT_SENT                 \
-        "http://twitter.com/direct_messages/sent.json"
+        TWITTER_HOST "/direct_messages/sent.json"
 #define TWITTER_API_DIRECT_NEW                  \
-        "http://twitter.com/direct_messages/new.json"
+        TWITTER_HOST "/direct_messages/new.json"
 #define TWITTER_API_DIRECT_DESTROY              \
-        "http://twitter.com/direct_messages/destroy/%s.json"
+        TWITTER_HOST "/direct_messages/destroy/%s.json"
 
 #define TWITTER_API_CREATE_FRIEND               \
-        "http://twitter.com/friendships/create/%s.json"
+        TWITTER_HOST "/friendships/create/%s.json"
 #define TWITTER_API_DESTROY_FRIEND              \
-        "http://twitter.com/friendships/destroy/%s.json"
+        TWITTER_HOST "/friendships/destroy/%s.json"
 
 #define TWITTER_API_VERIFY_CREDENTIALS          \
-        "http://twitter.com/account/verify_credentials.json"
+        TWITTER_HOST "/account/verify_credentials.json"
 
 #define TWITTER_API_END_SESSION                 \
-        "http://twitter.com/account/end_session"
+        TWITTER_HOST "/account/end_session"
 
 #define TWITTER_API_ARCHIVE                     \
-        "http://twitter.com/account/archive.json"
+        TWITTER_HOST "/account/archive.json"
 
 #define TWITTER_API_FAVORITES                   \
-        "http://twitter.com/favorites.json"
+        TWITTER_HOST "/favorites.json"
 
 #define TWITTER_API_FAVORITES_ID                \
-        "http://twitter.com/favorites/%s.json"
+        TWITTER_HOST "/favorites/%s.json"
 
 #define TWITTER_API_CREATE_FAVORITE             \
-        "http://twitter.com/favorites/create/%u.json"
+        TWITTER_HOST "/favorites/create/%u.json"
 #define TWITTER_API_DESTROY_FAVORITE            \
-        "http://twitter.com/favorites/destroy/%u.json"
+        TWITTER_HOST "/favorites/destroy/%u.json"
 
 #define TWITTER_API_FOLLOW                      \
-        "http://twitter.com/notifications/follow/%s.json"
+        TWITTER_HOST "/notifications/follow/%s.json"
 #define TWITTER_API_LEAVE                       \
-        "http://twitter.com/notifications/leave/%s.json"
+        TWITTER_HOST "/notifications/leave/%s.json"
 
 SoupMessage *
 twitter_api_public_timeline (gint since_id)
