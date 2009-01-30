@@ -42,6 +42,7 @@ gboolean              twitter_status_get_truncated       (TwitterStatus *status)
 G_CONST_RETURN gchar *twitter_status_get_text            (TwitterStatus *status);
 guint                 twitter_status_get_reply_to_user   (TwitterStatus *status);
 guint                 twitter_status_get_reply_to_status (TwitterStatus *status);
+G_CONST_RETURN gchar *twitter_status_get_url             (TwitterStatus *status);
 
 G_END_DECLS
 

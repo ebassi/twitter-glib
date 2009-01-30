@@ -23,6 +23,7 @@
 #include <string.h>
 #include <glib.h>
 
+#include "twitter-api.h"
 #include "twitter-common.h"
 #include "twitter-marshal.h"
 #include "twitter-private.h"
@@ -35,6 +36,7 @@ struct _TwitterStatusPrivate
   TwitterUser *user;
   guint user_changed_id;
 
+  gchar *url;
   gchar *source;
   gchar *created_at;
   gchar *text;
@@ -58,7 +60,8 @@ enum
   PROP_ID,
   PROP_TRUNCATED,
   PROP_REPLY_TO_USER,
-  PROP_REPLY_TO_STATUS
+  PROP_REPLY_TO_STATUS,
+  PROP_URL
 };
 
 enum
@@ -77,6 +80,7 @@ twitter_status_finalize (GObject *gobject)
 {
   TwitterStatusPrivate *priv = TWITTER_STATUS (gobject)->priv;
 
+  g_free (priv->url);
   g_free (priv->source);
   g_free (priv->created_at);
   g_free (priv->text);
@@ -130,6 +134,10 @@ twitter_status_get_property (GObject    *gobject,
 
     case PROP_REPLY_TO_STATUS:
       g_value_set_uint (value, priv->in_reply_to_status_id);
+      break;
+
+    case PROP_URL:
+      g_value_set_string (value, priv->url);
       break;
 
     default:
@@ -204,6 +212,13 @@ twitter_status_class_init (TwitterStatusClass *klass)
                                                       "The unique id of the status which the status replies to",
                                                       0, G_MAXUINT, 0,
                                                       G_PARAM_READABLE));
+  g_object_class_install_property (gobject_class,
+                                   PROP_URL,
+                                   g_param_spec_string ("url",
+                                                        "URL",
+                                                        "The URL of the status",
+                                                        NULL,
+                                                        G_PARAM_READABLE));
 
   status_signals[CHANGED] =
     g_signal_new ("changed",
@@ -233,6 +248,7 @@ twitter_status_clean (TwitterStatus *status)
 {
   TwitterStatusPrivate *priv = status->priv;
 
+  g_free (priv->url);
   g_free (priv->source);
   g_free (priv->created_at);
   g_free (priv->text);
@@ -295,6 +311,12 @@ twitter_status_build (TwitterStatus *status,
   member = json_object_get_member (obj, "in_reply_to_status_id");
   if (member)
     priv->in_reply_to_status_id = json_node_get_int (member);
+
+  if (priv->user && priv->id != 0)
+    priv->url = g_strdup_printf ("%s/%s/statuses/%d",
+                                 TWITTER_HOST,
+                                 twitter_user_get_screen_name (priv->user),
+                                 priv->id);
 }
 
 TwitterStatus *
@@ -433,4 +455,12 @@ twitter_status_get_reply_to_status (TwitterStatus *status)
   g_return_val_if_fail (TWITTER_IS_STATUS (status), 0);
 
   return status->priv->in_reply_to_status_id;
+}
+
+G_CONST_RETURN gchar *
+twitter_status_get_url (TwitterStatus *status)
+{
+  g_return_val_if_fail (TWITTER_IS_STATUS (status), NULL);
+
+  return status->priv->url;
 }
