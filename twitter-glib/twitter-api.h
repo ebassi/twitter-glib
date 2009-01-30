@@ -24,6 +24,8 @@
 
 G_BEGIN_DECLS
 
+#define TWITTER_HOST "http://twitter.com"
+
 SoupMessage *twitter_api_public_timeline    (gint         since_id);
 SoupMessage *twitter_api_friends_timeline   (const gchar *user,
                                              gint64       since);

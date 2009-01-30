@@ -25,8 +25,6 @@
 
 #include "twitter-api.h"
 
-#define TWITTER_HOST "http://twitter.com"
-
 /* @param (optional): since_id=%u, status id*/
 #define TWITTER_API_PUBLIC_TIMELINE             \
         TWITTER_HOST "/statuses/public_timeline.json"
