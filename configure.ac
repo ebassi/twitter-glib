@@ -1,6 +1,6 @@
 m4_define([twitter_major], [0])
 m4_define([twitter_minor], [9])
-m4_define([twitter_micro], [2])
+m4_define([twitter_micro], [3])
 
 m4_define([twitter_api], [1.0])
 
