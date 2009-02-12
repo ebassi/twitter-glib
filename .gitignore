@@ -1,3 +1,4 @@
+/ChangeLog
 /INSTALL
 /Makefile
 /Makefile.in
@@ -17,6 +18,14 @@
 /doc/reference/Makefile
 /doc/reference/Makefile.in
 /doc/reference/version.xml
+/doc/reference/html
+/doc/reference/xml
+/doc/reference/tmpl
+/doc/reference/twitter-glib-decls.txt
+/doc/reference/twitter-glib-undocumented.txt
+/doc/reference/twitter-glib-unused.txt
+/doc/reference/twitter-glib-overrides.txt
+/doc/reference/twitter-glib.signals
 /gtk-doc.make
 /install-sh
 /libtool
