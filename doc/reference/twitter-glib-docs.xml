@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+               "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+  <!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
+  <!ENTITY version SYSTEM "version.xml">
+]>
+<book id="index">
+  <bookinfo>
+    <title>Twitter-GLib Reference Manual</title>
+    <releaseinfo>
+      for Twitter-GLib &version;
+      The latest version of this documentation can be found on-line at
+      <ulink role="online-location" url="http://[SERVER]/twitter-glib/index.html">http://[SERVER]/twitter-glib/</ulink>.
+    </releaseinfo>
+  </bookinfo>
+
+  <chapter>
+    <title>Twitter-GLib</title>
+    <xi:include href="xml/twitter-client.xml"/>
+    <xi:include href="xml/twitter-common.xml"/>
+    <xi:include href="xml/twitter-user-list.xml"/>
+    <xi:include href="xml/twitter-timeline.xml"/>
+    <xi:include href="xml/twitter-user.xml"/>
+    <xi:include href="xml/twitter-status.xml"/>
+    <xi:include href="xml/twitter-version.xml"/>
+
+  </chapter>
+  <chapter id="object-tree">
+    <title>Object Hierarchy</title>
+     <xi:include href="xml/tree_index.sgml"/>
+  </chapter>
+
+  <index id="api-index-full">
+    <title>API Index</title>
+    <xi:include href="xml/api-index-full.xml"><xi:fallback /></xi:include>
+  </index>
+
+  <xi:include href="xml/annotation-glossary.xml"><xi:fallback /></xi:include>
+</book>
