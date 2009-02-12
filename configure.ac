@@ -70,13 +70,13 @@ AC_PATH_PROG([GLIB_GENMARSHAL], [glib-genmarshal])
 AC_PATH_PROG([GLIB_MKENUMS], [glib-mkenums])
 AC_CHECK_FUNCS([strptime localtime_r])
 
-PKG_CHECK_MODULES(TWITTER_GLIB, gobject-2.0 >= glib_req_version        dnl
-                                gio-2.0 >= glib_req_version            dnl
-                                json-glib-1.0 >= json_glib_req_version dnl
-                                libsoup-2.4 >= soup_req_version        dnl
-                                gdk-pixbuf-2.0)
-AC_SUBST(JSON_CFLAGS)
-AC_SUBST(JSON_LIBS)
+PKG_CHECK_MODULES(TWITTER, gobject-2.0 >= glib_req_version        dnl
+                           gio-2.0 >= glib_req_version            dnl
+                           json-glib-1.0 >= json_glib_req_version dnl
+                           libsoup-2.4 >= soup_req_version        dnl
+                           gdk-pixbuf-2.0)
+AC_SUBST(TWITTER_CFLAGS)
+AC_SUBST(TWITTER_LIBS)
 
 GLIB_PREFIX="`$PKG_CONFIG --variable=prefix glib-2.0`"
 GDK_PIXBUF_PREFIX="`$PKG_CONFIG --variable=prefix gdk-pixbuf-2.0`"
