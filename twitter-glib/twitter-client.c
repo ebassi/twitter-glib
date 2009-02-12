@@ -644,6 +644,7 @@ get_status_cb (SoupSession *session,
 
       g_set_error (&error, TWITTER_ERROR,
                    twitter_error_from_status (msg->status_code),
+                   "%s",
                    msg->reason_phrase);
 
       g_signal_emit (client, client_signals[STATUS_RECEIVED], 0,
@@ -699,6 +700,7 @@ verify_cb (SoupSession *session,
 
       g_set_error (&error, TWITTER_ERROR,
                    twitter_error_from_status (msg->status_code),
+                   "%s",
                    msg->reason_phrase);
 
       g_signal_emit (client, client_signals[USER_VERIFIED], 0,
@@ -855,6 +857,7 @@ get_timeline_cb (SoupSession *session,
 
       g_set_error (&error, TWITTER_ERROR,
                    twitter_error_from_status (msg->status_code),
+                   "%s",
                    msg->reason_phrase);
 
       g_signal_emit (client, client_signals[STATUS_RECEIVED], 0,
@@ -1054,6 +1057,7 @@ get_user_cb (SoupSession *session,
 
       g_set_error (&error, TWITTER_ERROR,
                    twitter_error_from_status (msg->status_code),
+                   "%s",
                    msg->reason_phrase);
 
       g_signal_emit (client, client_signals[USER_RECEIVED], 0,
@@ -1190,6 +1194,7 @@ get_user_list_cb (SoupSession *session,
 
       g_set_error (&error, TWITTER_ERROR,
                    twitter_error_from_status (msg->status_code),
+                   "%s",
                    msg->reason_phrase);
 
       g_signal_emit (client, client_signals[USER_RECEIVED], 0,
