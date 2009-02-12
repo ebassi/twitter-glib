@@ -3,6 +3,7 @@
 /Makefile.in
 /aclocal.m4
 /autom4te.cache/
+/compile
 /config.guess
 /config.h
 /config.h.in
@@ -39,3 +40,6 @@
 /twitter-glib/twitter-marshal.c
 /twitter-glib/twitter-marshal.h
 /twitter-glib/twitter-version.h
+*~
+.*.swp
+.*.swo
