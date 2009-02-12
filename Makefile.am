@@ -8,9 +8,9 @@ endif
 
 DIST_SUBDIRS = twitter-glib doc tests
 
-pcfiles = twitter-glib-1.0.pc
+pcfiles = twitter-glib-$(TWITTER_API_VERSION).pc
 
-twitter-glib-1.0.pc: twitter-glib.pc
+twitter-glib-$(TWITTER_API_VERSION).pc: twitter-glib.pc
 	@cp -f $< $@
 
 pkgconfig_DATA = $(pcfiles)
