@@ -20,6 +20,7 @@ twitter_error_quark
 <FILE>twitter-user-list</FILE>
 <TITLE>TwitterUserList</TITLE>
 TwitterUserList
+TwitterUserListClass
 twitter_user_list_new
 twitter_user_list_new_from_data
 twitter_user_list_load_from_data
@@ -43,6 +44,7 @@ TwitterUserListPrivate
 <FILE>twitter-timeline</FILE>
 <TITLE>TwitterTimeline</TITLE>
 TwitterTimeline
+TwitterTimelineClass
 twitter_timeline_new
 twitter_timeline_new_from_data
 twitter_timeline_load_from_data
@@ -65,12 +67,17 @@ TwitterTimelinePrivate
 <SECTION>
 <FILE>twitter-client</FILE>
 <TITLE>TwitterClient</TITLE>
+TwitterProvider
+TwitterAuthState
 TwitterClient
 TwitterClientClass
 twitter_client_new
 twitter_client_new_for_user
+twitter_client_new_full
 twitter_client_set_user
 twitter_client_get_user
+twitter_client_get_provider
+twitter_client_get_base_url
 
 <SUBSECTION>
 twitter_client_verify_user
@@ -113,7 +120,7 @@ TWITTER_IS_CLIENT_CLASS
 TWITTER_CLIENT_GET_CLASS
 
 <SUBSECTION Private>
-TwtterClientPrivate
+TwitterClientPrivate
 </SECTION>
 
 <SECTION>
@@ -150,6 +157,7 @@ TWITTER_IS_USER
 TWITTER_IS_USER_CLASS
 TWITTER_USER_GET_CLASS
 <SUBSECTION Private>
+TwitterUserPrivate
 twitter_user_get_type
 </SECTION>
 
@@ -178,6 +186,7 @@ TWITTER_IS_STATUS
 TWITTER_IS_STATUS_CLASS
 TWITTER_STATUS_GET_CLASS
 <SUBSECTION Private>
+TwitterStatusPrivate
 twitter_status_get_type
 </SECTION>
 
