@@ -86,13 +86,14 @@ struct _TwitterStatusClass
 
 /**
  * TwitterError:
- * @TWITTER_ERROR_HOST_NOT_FOUND:
- * @TWITTER_ERROR_CANCELLED:
- * @TWITTER_ERROR_PERMISSION_DENIED:
- * @TWITTER_ERROR_NOT_FOUND:
- * @TWITTER_ERROR_TIMED_OUT:
- * @TWITTER_ERROR_FAILED:
- * @TWITTER_ERROR_NOT_MODIFIED:
+ * @TWITTER_ERROR_HOST_NOT_FOUND: Host not found
+ * @TWITTER_ERROR_CANCELLED: Cancelled
+ * @TWITTER_ERROR_PERMISSION_DENIED: Permission denied
+ * @TWITTER_ERROR_NOT_FOUND: Operation not found
+ * @TWITTER_ERROR_TIMED_OUT: Operation timed out
+ * @TWITTER_ERROR_FAILED: Operation failed
+ * @TWITTER_ERROR_NOT_MODIFIED: The result of the operation hasn't been
+ *    modified since the last query
  *
  * Twitter error enumeration.
  */
