@@ -24,37 +24,54 @@
 
 G_BEGIN_DECLS
 
-#define TWITTER_HOST "http://twitter.com"
+#define TWITTER_DEFAULT_HOST    "http://twitter.com"
 
-SoupMessage *twitter_api_public_timeline    (gint         since_id);
-SoupMessage *twitter_api_friends_timeline   (const gchar *user,
+SoupMessage *twitter_api_public_timeline    (const gchar *base_url,
+                                             gint         since_id);
+SoupMessage *twitter_api_friends_timeline   (const gchar *base_url,
+                                             const gchar *user,
                                              gint64       since);
-SoupMessage *twitter_api_user_timeline      (const gchar *user,
+SoupMessage *twitter_api_user_timeline      (const gchar *base_url,
+                                             const gchar *user,
                                              guint        count,
                                              gint64       since);
-SoupMessage *twitter_api_status_show        (guint        status_id);
-SoupMessage *twitter_api_update             (const gchar *text);
-SoupMessage *twitter_api_replies            (void);
-SoupMessage *twitter_api_destroy            (guint        status_id);
-SoupMessage *twitter_api_friends            (const gchar *user,
+SoupMessage *twitter_api_status_show        (const gchar *base_url,
+                                             guint        status_id);
+SoupMessage *twitter_api_update             (const gchar *base_url,
+                                             const gchar *text);
+SoupMessage *twitter_api_replies            (const gchar *base_url);
+SoupMessage *twitter_api_destroy            (const gchar *base_url,
+                                             guint        status_id);
+SoupMessage *twitter_api_friends            (const gchar *base_url,
+                                             const gchar *user,
                                              gint         page,
                                              gboolean     lite);
-SoupMessage *twitter_api_featured           (void);
-SoupMessage *twitter_api_user_show          (const gchar *user,
+SoupMessage *twitter_api_featured           (const gchar *base_url);
+SoupMessage *twitter_api_user_show          (const gchar *base_url,
+                                             const gchar *user,
                                              const gchar *email);
-SoupMessage *twitter_api_verify_credentials (void);
-SoupMessage *twitter_api_end_session        (void);
-SoupMessage *twitter_api_followers          (gint         page,
+SoupMessage *twitter_api_verify_credentials (const gchar *base_url);
+SoupMessage *twitter_api_end_session        (const gchar *base_url);
+SoupMessage *twitter_api_followers          (const gchar *base_url,
+                                             gint         page,
                                              gboolean     lite);
-SoupMessage *twitter_api_create_friend      (const gchar *user);
-SoupMessage *twitter_api_destroy_friend     (const gchar *user);
-SoupMessage *twitter_api_favorites          (const gchar *user,
+SoupMessage *twitter_api_create_friend      (const gchar *base_url,
+                                             const gchar *user);
+SoupMessage *twitter_api_destroy_friend     (const gchar *base_url,
+                                             const gchar *user);
+SoupMessage *twitter_api_favorites          (const gchar *base_url,
+                                             const gchar *user,
                                              gint         page);
-SoupMessage *twitter_api_create_favorite    (guint        status_id);
-SoupMessage *twitter_api_destroy_favorite   (guint        status_id);
-SoupMessage *twitter_api_follow             (const gchar *user);
-SoupMessage *twitter_api_leave              (const gchar *user);
-SoupMessage *twitter_api_archive            (gint         page);
+SoupMessage *twitter_api_create_favorite    (const gchar *base_url,
+                                             guint        status_id);
+SoupMessage *twitter_api_destroy_favorite   (const gchar *base_url,
+                                             guint        status_id);
+SoupMessage *twitter_api_follow             (const gchar *base_url,
+                                             const gchar *user);
+SoupMessage *twitter_api_leave              (const gchar *base_url,
+                                             const gchar *user);
+SoupMessage *twitter_api_archive            (const gchar *base_url,
+                                             gint         page);
 
 G_END_DECLS
 

@@ -55,6 +55,26 @@ typedef enum {
 } TwitterAuthState;
 
 /**
+ * TwitterProvider:
+ * @TWITTER_CUSTOM_PROVIDER: A custom provider
+ * @TWITTER_DEFAULT_PROVIDER: The default Twitter provider
+ *
+ * The provider for the Twitter services.
+ *
+ * %TWITTER_DEFAULT_PROVIDER is the default provider, at http://twitter.com.
+ *
+ * %TWITTER_CUSTOM_PROVIDER is used with twitter_client_set_base_url()
+ * for custom Twitter services providing a Twitter compatibility
+ * layer
+ *
+ * This enumeration can be extended at any later date.
+ */
+typedef enum {
+  TWITTER_CUSTOM_PROVIDER = 0,
+  TWITTER_DEFAULT_PROVIDER
+} TwitterProvider;
+
+/**
  * TwitterClient:
  *
  * #TwitterClient allows to connect to the Twitter web service
@@ -122,69 +142,76 @@ struct _TwitterClientClass
   void     (* _twitter_padding8) (void);
 };
 
-GType          twitter_client_get_type             (void) G_GNUC_CONST;
+GType twitter_client_get_type (void) G_GNUC_CONST;
 
-TwitterClient *twitter_client_new                  (void);
-TwitterClient *twitter_client_new_for_user         (const gchar    *email,
-                                                    const gchar    *password);
+TwitterClient *       twitter_client_new                  (void);
+TwitterClient *       twitter_client_new_for_user         (const gchar     *email,
+                                                           const gchar     *password);
+TwitterClient *       twitter_client_new_full             (TwitterProvider  provider,
+                                                           const gchar     *base_url,
+                                                           const gchar     *email,
+                                                           const gchar     *password);
 
-void           twitter_client_set_user             (TwitterClient  *client,
-                                                    const gchar    *email,
-                                                    const gchar    *password);
-void           twitter_client_get_user             (TwitterClient  *client,
-                                                    gchar         **email,
-                                                    gchar         **password);
-void           twitter_client_verify_user          (TwitterClient  *client);
-void           twitter_client_end_session          (TwitterClient  *client);
-void           twitter_client_show_user_from_id    (TwitterClient  *client,
-                                                    const gchar    *user);
-void           twitter_client_show_user_from_email (TwitterClient  *client,
-                                                    const gchar    *email);
+TwitterProvider       twitter_client_get_provider         (TwitterClient   *client);
+G_CONST_RETURN gchar *twitter_client_get_base_url         (TwitterClient   *client);
 
-void           twitter_client_get_public_timeline  (TwitterClient  *client,
-                                                    guint           since_id);
-void           twitter_client_get_friends_timeline (TwitterClient  *client,
-                                                    const gchar    *friend_,
-                                                    gint64          since_date);
-void           twitter_client_get_user_timeline    (TwitterClient  *client,
-                                                    const gchar    *user,
-                                                    guint           count,
-                                                    gint64          since_date);
-void           twitter_client_get_replies          (TwitterClient  *client);
-void           twitter_client_get_favorites        (TwitterClient  *client,
-                                                    const gchar    *user,
-                                                    gint            page);
-void           twitter_client_get_archive          (TwitterClient  *client,
-                                                    gint            page);
-void           twitter_client_get_friends          (TwitterClient  *client,
-                                                    const gchar    *user,
-                                                    gint            page,
-                                                    gboolean        omit_status);
-void           twitter_client_get_followers        (TwitterClient  *client,
-                                                    gint            page,
-                                                    gboolean        omit_status);
+void                  twitter_client_set_user             (TwitterClient   *client,
+                                                           const gchar     *email,
+                                                           const gchar     *password);
+void                  twitter_client_get_user             (TwitterClient   *client,
+                                                           gchar          **email,
+                                                           gchar          **password);
+void                  twitter_client_verify_user          (TwitterClient   *client);
+void                  twitter_client_end_session          (TwitterClient   *client);
+void                  twitter_client_show_user_from_id    (TwitterClient   *client,
+                                                           const gchar     *user);
+void                  twitter_client_show_user_from_email (TwitterClient   *client,
+                                                           const gchar     *email);
 
-void           twitter_client_get_status           (TwitterClient  *client,
-                                                    guint           status_id);
-void           twitter_client_add_status           (TwitterClient  *client,
-                                                    const gchar    *text);
-void           twitter_client_remove_status        (TwitterClient  *client,
-                                                    guint           status_id);
+void                  twitter_client_get_public_timeline  (TwitterClient   *client,
+                                                           guint            since_id);
+void                  twitter_client_get_friends_timeline (TwitterClient   *client,
+                                                           const gchar     *friend_,
+                                                           gint64           since_date);
+void                  twitter_client_get_user_timeline    (TwitterClient   *client,
+                                                           const gchar     *user,
+                                                           guint            count,
+                                                           gint64           since_date);
+void                  twitter_client_get_replies          (TwitterClient   *client);
+void                  twitter_client_get_favorites        (TwitterClient   *client,
+                                                           const gchar     *user,
+                                                           gint             page);
+void                  twitter_client_get_archive          (TwitterClient   *client,
+                                                           gint             page);
+void                  twitter_client_get_friends          (TwitterClient   *client,
+                                                           const gchar     *user,
+                                                           gint             page,
+                                                           gboolean         omit_status);
+void                  twitter_client_get_followers        (TwitterClient   *client,
+                                                           gint             page,
+                                                           gboolean         omit_status);
 
-void           twitter_client_add_friend           (TwitterClient  *client,
-                                                    const gchar    *user);
-void           twitter_client_remove_friend        (TwitterClient  *client,
-                                                    const gchar    *user);
+void                  twitter_client_get_status           (TwitterClient   *client,
+                                                           guint            status_id);
+void                  twitter_client_add_status           (TwitterClient   *client,
+                                                           const gchar     *text);
+void                  twitter_client_remove_status        (TwitterClient   *client,
+                                                           guint            status_id);
 
-void           twitter_client_follow_user          (TwitterClient  *client,
-                                                    const gchar    *user);
-void           twitter_client_leave_user           (TwitterClient  *client,
-                                                    const gchar    *user);
+void                  twitter_client_add_friend           (TwitterClient   *client,
+                                                           const gchar     *user);
+void                  twitter_client_remove_friend        (TwitterClient   *client,
+                                                           const gchar     *user);
 
-void           twitter_client_add_favorite         (TwitterClient  *client,
-                                                    guint           status_id);
-void           twitter_client_remove_favorite      (TwitterClient  *client,
-                                                    guint           status_id);
+void                  twitter_client_follow_user          (TwitterClient   *client,
+                                                           const gchar     *user);
+void                  twitter_client_leave_user           (TwitterClient   *client,
+                                                           const gchar     *user);
+
+void                  twitter_client_add_favorite         (TwitterClient   *client,
+                                                           guint            status_id);
+void                  twitter_client_remove_favorite      (TwitterClient   *client,
+                                                           guint            status_id);
 
 G_END_DECLS
 

@@ -88,6 +88,9 @@ struct _TwitterClientPrivate
 
   gchar *user_agent;
 
+  TwitterProvider provider;
+  gchar *base_url;
+
   gchar *email;
   gchar *password;
 
@@ -102,7 +105,9 @@ enum
 
   PROP_EMAIL,
   PROP_PASSWORD,
-  PROP_USER_AGENT
+  PROP_USER_AGENT,
+  PROP_PROVIDER,
+  PROP_BASE_URL
 };
 
 enum
@@ -140,6 +145,7 @@ twitter_client_finalize (GObject *gobject)
   soup_session_abort (priv->session_async);
   g_object_unref (priv->session_async);
 
+  g_free (priv->base_url);
   g_free (priv->user_agent);
   g_free (priv->email);
   g_free (priv->password);
@@ -172,6 +178,21 @@ twitter_client_set_property (GObject      *gobject,
       priv->user_agent = g_value_dup_string (value);
       break;
 
+    case PROP_PROVIDER:
+      priv->provider = g_value_get_enum (value);
+      break;
+
+    case PROP_BASE_URL:
+      g_free (priv->base_url);
+      if (g_value_get_string (value) != NULL)
+        {
+          priv->base_url = g_value_dup_string (value);
+          priv->provider = TWITTER_CUSTOM_PROVIDER;
+        }
+      else
+        priv->base_url = NULL;
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -200,6 +221,14 @@ twitter_client_get_property (GObject    *gobject,
       g_value_set_string (value, priv->user_agent);
       break;
 
+    case PROP_PROVIDER:
+      g_value_set_enum (value, priv->provider);
+      break;
+
+    case PROP_BASE_URL:
+      g_value_set_string (value, priv->base_url);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -212,13 +241,30 @@ twitter_client_constructed (GObject *gobject)
   TwitterClientPrivate *priv = TWITTER_CLIENT (gobject)->priv;
   gchar *user_agent;
 
-  if (!priv->user_agent)
+  if (priv->user_agent == NULL)
     user_agent = g_strdup ("Twitter-GLib/" VERSION);
   else
     user_agent = g_strdup (priv->user_agent);
 
   priv->session_async =
     soup_session_async_new_with_options ("user-agent", user_agent, NULL);
+
+  if (G_UNLIKELY (priv->base_url == NULL))
+    {
+      switch (priv->provider)
+        {
+        case TWITTER_DEFAULT_PROVIDER:
+          priv->base_url = g_strdup (TWITTER_DEFAULT_HOST);
+          break;
+
+        case TWITTER_CUSTOM_PROVIDER:
+          g_critical ("No base URL has been set for a custom provider. "
+                      "Falling base to the default provider");
+          priv->base_url = g_strdup (TWITTER_DEFAULT_HOST);
+          priv->provider = TWITTER_DEFAULT_PROVIDER;
+          break;
+        }
+    }
 
   g_free (user_agent);
 }
@@ -227,6 +273,7 @@ static void
 twitter_client_class_init (TwitterClientClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (TwitterClientPrivate));
 
@@ -235,27 +282,43 @@ twitter_client_class_init (TwitterClientClass *klass)
   gobject_class->get_property = twitter_client_get_property;
   gobject_class->finalize = twitter_client_finalize;
 
-  g_object_class_install_property (gobject_class,
-                                   PROP_EMAIL,
-                                   g_param_spec_string ("email",
-                                                        "Email",
-                                                        "The email of the user, for authentication purposes",
-                                                        NULL,
-                                                        G_PARAM_READWRITE));
-  g_object_class_install_property (gobject_class,
-                                   PROP_PASSWORD,
-                                   g_param_spec_string ("password",
-                                                        "Password",
-                                                        "The password of the user, for authentication purposes",
-                                                        NULL,
-                                                        G_PARAM_READWRITE));
-  g_object_class_install_property (gobject_class,
-                                   PROP_USER_AGENT,
-                                   g_param_spec_string ("user-agent",
-                                                        "User Agent",
-                                                        "The client name to be used when connecting",
-                                                        NULL,
-                                                        G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
+  pspec = g_param_spec_string ("email",
+                               "Email",
+                               "The email of the user, for authentication "
+                               "purposes",
+                               NULL,
+                               G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_EMAIL, pspec);
+
+  pspec = g_param_spec_string ("password",
+                               "Password",
+                               "The password of the user, for authentication "
+                               "purposes",
+                               NULL,
+                               G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_PASSWORD, pspec);
+
+  pspec = g_param_spec_string ("user-agent",
+                               "User Agent",
+                               "The client name to be used when connecting",
+                               NULL,
+                               G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_USER_AGENT, pspec);
+
+  pspec = g_param_spec_enum ("provider",
+                             "Provider",
+                             "The Twitter service provider",
+                             TWITTER_TYPE_PROVIDER,
+                             TWITTER_DEFAULT_PROVIDER,
+                             G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_PROVIDER, pspec);
+
+  pspec = g_param_spec_string ("base-url",
+                               "Base URL",
+                               "The base URL of the Twitter service provider",
+                               TWITTER_DEFAULT_HOST,
+                               G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_BASE_URL, pspec);
 
   /**
    * TwitterClient::authenticate:
@@ -346,6 +409,8 @@ twitter_client_init (TwitterClient *client)
   client->priv = priv = TWITTER_CLIENT_GET_PRIVATE (client);
 
   priv->auth_id = 0;
+
+  priv->provider = TWITTER_DEFAULT_PROVIDER;
 }
 
 typedef enum {
@@ -514,6 +579,23 @@ twitter_client_new_for_user (const gchar *email,
                              const gchar *password)
 {
   return g_object_new (TWITTER_TYPE_CLIENT,
+                       "email", email,
+                       "password", password,
+                       NULL);
+}
+
+TwitterClient *
+twitter_client_new_full (TwitterProvider  provider,
+                         const gchar     *base_url,
+                         const gchar     *email,
+                         const gchar     *password)
+{
+  if (provider == TWITTER_CUSTOM_PROVIDER)
+    g_return_val_if_fail (base_url != NULL, NULL);
+
+  return g_object_new (TWITTER_TYPE_CLIENT,
+                       "provider", provider,
+                       "base-url", base_url,
                        "email", email,
                        "password", password,
                        NULL);
@@ -731,7 +813,7 @@ twitter_client_verify_user (TwitterClient *client)
 
   g_return_if_fail (TWITTER_IS_CLIENT (client));
 
-  msg = twitter_api_verify_credentials ();
+  msg = twitter_api_verify_credentials (client->priv->base_url);
 
   clos = g_new0 (VerifyClosure, 1);
   closure_set_action (clos, VERIFY_CREDENTIALS);
@@ -760,7 +842,7 @@ twitter_client_end_session (TwitterClient *client)
 
   g_return_if_fail (TWITTER_IS_CLIENT (client));
 
-  msg = twitter_api_end_session ();
+  msg = twitter_api_end_session (client->priv->base_url);
 
   twitter_client_queue_message (client, msg, FALSE,
                                 end_session_cb,
@@ -905,7 +987,7 @@ twitter_client_get_public_timeline (TwitterClient *client,
 
   g_return_if_fail (TWITTER_IS_CLIENT (client));
 
-  msg = twitter_api_public_timeline (since_id);
+  msg = twitter_api_public_timeline (client->priv->base_url, since_id);
 
   clos = g_new0 (GetTimelineClosure, 1);
   closure_set_action (clos, PUBLIC_TIMELINE);
@@ -928,7 +1010,7 @@ twitter_client_get_friends_timeline (TwitterClient *client,
 
   g_return_if_fail (TWITTER_IS_CLIENT (client));
 
-  msg = twitter_api_friends_timeline (friend_, since_date);
+  msg = twitter_api_friends_timeline (client->priv->base_url, friend_, since_date);
 
   clos = g_new0 (GetTimelineClosure, 1);
   closure_set_action (clos, FRIENDS_TIMELINE);
@@ -952,7 +1034,7 @@ twitter_client_get_user_timeline (TwitterClient *client,
 
   g_return_if_fail (TWITTER_IS_CLIENT (client));
 
-  msg = twitter_api_user_timeline (user, count, since_date);
+  msg = twitter_api_user_timeline (client->priv->base_url, user, count, since_date);
 
   clos = g_new0 (GetTimelineClosure, 1);
   closure_set_action (clos, USER_TIMELINE);
@@ -973,7 +1055,7 @@ twitter_client_get_replies (TwitterClient *client)
 
   g_return_if_fail (TWITTER_IS_CLIENT (client));
 
-  msg = twitter_api_replies ();
+  msg = twitter_api_replies (client->priv->base_url);
 
   clos = g_new0 (GetTimelineClosure, 1);
   closure_set_action (clos, STATUS_REPLIES);
@@ -996,7 +1078,7 @@ twitter_client_get_favorites (TwitterClient *client,
 
   g_return_if_fail (TWITTER_IS_CLIENT (client));
 
-  msg = twitter_api_favorites (user, page);
+  msg = twitter_api_favorites (client->priv->base_url, user, page);
 
   clos = g_new0 (GetTimelineClosure, 1);
   closure_set_action (clos, FAVORITES);
@@ -1018,7 +1100,7 @@ twitter_client_get_archive (TwitterClient *client,
 
   g_return_if_fail (TWITTER_IS_CLIENT (client));
 
-  msg = twitter_api_archive (page);
+  msg = twitter_api_archive (client->priv->base_url, page);
 
   clos = g_new0 (GetTimelineClosure, 1);
   closure_set_action (clos, ARCHIVE);
@@ -1109,7 +1191,7 @@ twitter_client_get_status (TwitterClient *client,
   g_return_if_fail (TWITTER_IS_CLIENT (client));
   g_return_if_fail (status_id > 0);
 
-  msg = twitter_api_status_show (status_id);
+  msg = twitter_api_status_show (client->priv->base_url, status_id);
 
   clos = g_new0 (GetStatusClosure, 1);
   closure_set_action (clos, STATUS_SHOW);
@@ -1132,7 +1214,7 @@ twitter_client_add_status (TwitterClient *client,
   g_return_if_fail (TWITTER_IS_CLIENT (client));
   g_return_if_fail (text != NULL);
 
-  msg = twitter_api_update (text);
+  msg = twitter_api_update (client->priv->base_url, text);
 
   clos = g_new0 (GetStatusClosure, 1);
   closure_set_action (clos, STATUS_UPDATE);
@@ -1155,7 +1237,7 @@ twitter_client_remove_status (TwitterClient *client,
   g_return_if_fail (TWITTER_IS_CLIENT (client));
   g_return_if_fail (status_id > 0);
 
-  msg = twitter_api_destroy (status_id);
+  msg = twitter_api_destroy (client->priv->base_url, status_id);
 
   clos = g_new0 (GetStatusClosure, 1);
   closure_set_action (clos, STATUS_DESTROY);
@@ -1243,7 +1325,7 @@ twitter_client_add_friend (TwitterClient *client,
   g_return_if_fail (TWITTER_IS_CLIENT (client));
   g_return_if_fail (user != NULL);
 
-  msg = twitter_api_create_friend (user);
+  msg = twitter_api_create_friend (client->priv->base_url, user);
 
   clos = g_new0 (GetUserClosure, 1);
   closure_set_action (clos, FRIEND_CREATE);
@@ -1266,7 +1348,7 @@ twitter_client_remove_friend (TwitterClient *client,
   g_return_if_fail (TWITTER_IS_CLIENT (client));
   g_return_if_fail (user != NULL);
 
-  msg = twitter_api_destroy_friend (user);
+  msg = twitter_api_destroy_friend (client->priv->base_url, user);
 
   clos = g_new0 (GetUserClosure, 1);
   closure_set_action (clos, FRIEND_DESTROY);
@@ -1289,7 +1371,7 @@ twitter_client_follow_user (TwitterClient *client,
   g_return_if_fail (TWITTER_IS_CLIENT (client));
   g_return_if_fail (user != NULL);
 
-  msg = twitter_api_follow (user);
+  msg = twitter_api_follow (client->priv->base_url, user);
 
   clos = g_new0 (GetUserClosure, 1);
   closure_set_action (clos, NOTIFICATION_FOLLOW);
@@ -1312,7 +1394,7 @@ twitter_client_leave_user (TwitterClient  *client,
   g_return_if_fail (TWITTER_IS_CLIENT (client));
   g_return_if_fail (user != NULL);
 
-  msg = twitter_api_leave (user);
+  msg = twitter_api_leave (client->priv->base_url, user);
 
   clos = g_new0 (GetUserClosure, 1);
   closure_set_action (clos, NOTIFICATION_LEAVE);
@@ -1335,7 +1417,7 @@ twitter_client_add_favorite (TwitterClient  *client,
   g_return_if_fail (TWITTER_IS_CLIENT (client));
   g_return_if_fail (status_id > 0);
 
-  msg = twitter_api_create_favorite (status_id);
+  msg = twitter_api_create_favorite (client->priv->base_url, status_id);
 
   clos = g_new0 (GetStatusClosure, 1);
   closure_set_action (clos, FAVORITE_CREATE);
@@ -1358,7 +1440,7 @@ twitter_client_remove_favorite (TwitterClient  *client,
   g_return_if_fail (TWITTER_IS_CLIENT (client));
   g_return_if_fail (status_id > 0);
 
-  msg = twitter_api_destroy_favorite (status_id);
+  msg = twitter_api_destroy_favorite (client->priv->base_url, status_id);
 
   clos = g_new0 (GetStatusClosure, 1);
   closure_set_action (clos, FAVORITE_DESTROY);
@@ -1382,7 +1464,7 @@ twitter_client_get_friends (TwitterClient *client,
 
   g_return_if_fail (TWITTER_IS_CLIENT (client));
 
-  msg = twitter_api_friends (user, page, omit_status);
+  msg = twitter_api_friends (client->priv->base_url, user, page, omit_status);
 
   clos = g_new0 (GetUserListClosure, 1);
   closure_set_action (clos, FRIENDS);
@@ -1405,7 +1487,7 @@ twitter_client_get_followers (TwitterClient *client,
 
   g_return_if_fail (TWITTER_IS_CLIENT (client));
 
-  msg = twitter_api_followers (page, omit_status);
+  msg = twitter_api_followers (client->priv->base_url, page, omit_status);
 
   clos = g_new0 (GetUserListClosure, 1);
   closure_set_action (clos, FOLLOWERS);
@@ -1428,7 +1510,7 @@ twitter_client_show_user_from_email (TwitterClient *client,
   g_return_if_fail (TWITTER_IS_CLIENT (client));
   g_return_if_fail (email != NULL);
 
-  msg = twitter_api_user_show (NULL, email);
+  msg = twitter_api_user_show (client->priv->base_url, NULL, email);
 
   clos = g_new0 (GetUserClosure, 1);
   closure_set_action (clos, USER_SHOW);
@@ -1451,7 +1533,7 @@ twitter_client_show_user_from_id (TwitterClient *client,
   g_return_if_fail (TWITTER_IS_CLIENT (client));
   g_return_if_fail (user != NULL);
 
-  msg = twitter_api_user_show (user, NULL);
+  msg = twitter_api_user_show (client->priv->base_url, user, NULL);
 
   clos = g_new0 (GetUserClosure, 1);
   closure_set_action (clos, USER_SHOW);
@@ -1462,4 +1544,20 @@ twitter_client_show_user_from_id (TwitterClient *client,
   twitter_client_queue_message (client, msg, TRUE,
                                 get_user_cb,
                                 clos);
+}
+
+TwitterProvider
+twitter_client_get_provider (TwitterClient *client)
+{
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), TWITTER_DEFAULT_PROVIDER);
+
+  return client->priv->provider;
+}
+
+G_CONST_RETURN gchar *
+twitter_client_get_base_url (TwitterClient *client)
+{
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), NULL);
+
+  return client->priv->base_url;
 }

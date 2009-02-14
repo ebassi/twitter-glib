@@ -314,7 +314,7 @@ twitter_status_build (TwitterStatus *status,
 
   if (priv->user && priv->id != 0)
     priv->url = g_strdup_printf ("%s/%s/statuses/%d",
-                                 TWITTER_HOST,
+                                 TWITTER_DEFAULT_HOST,
                                  twitter_user_get_screen_name (priv->user),
                                  priv->id);
 }
