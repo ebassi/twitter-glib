@@ -58,10 +58,14 @@ typedef enum {
  * TwitterProvider:
  * @TWITTER_CUSTOM_PROVIDER: A custom provider
  * @TWITTER_DEFAULT_PROVIDER: The default Twitter provider
+ * @TWITTER_IDENTI_CA: The Identi.ca provider
  *
  * The provider for the Twitter services.
  *
  * %TWITTER_DEFAULT_PROVIDER is the default provider, at http://twitter.com.
+ *
+ * %TWITTER_IDENTI_CA is the identi.ca Twitter compatibility provider,
+ * at http://identi.ca/api.
  *
  * %TWITTER_CUSTOM_PROVIDER is used with twitter_client_set_base_url()
  * for custom Twitter services providing a Twitter compatibility
@@ -69,9 +73,10 @@ typedef enum {
  *
  * This enumeration can be extended at any later date.
  */
-typedef enum {
+typedef enum { /*< prefix=TWITTER >*/
   TWITTER_CUSTOM_PROVIDER = 0,
-  TWITTER_DEFAULT_PROVIDER
+  TWITTER_DEFAULT_PROVIDER,
+  TWITTER_IDENTI_CA
 } TwitterProvider;
 
 /**

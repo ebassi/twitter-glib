@@ -257,6 +257,10 @@ twitter_client_constructed (GObject *gobject)
           priv->base_url = g_strdup (TWITTER_DEFAULT_HOST);
           break;
 
+        case TWITTER_IDENTI_CA:
+          priv->base_url = g_strdup (TWITTER_IDENTICA_HOST);
+          break;
+
         case TWITTER_CUSTOM_PROVIDER:
           g_critical ("No base URL has been set for a custom provider. "
                       "Falling base to the default provider");

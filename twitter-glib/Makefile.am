@@ -63,7 +63,7 @@ stamp-twitter-enum-types.h: $(sources_public_h) Makefile
 	&& rm -f xgen-ceth \
 	&& echo timestamp > $(@F)
 
-twitter-enum-types.c: twitter-enum-types.h
+twitter-enum-types.c: stamp-twitter-enum-types.h
 	( cd $(srcdir) && \
 	  $(GLIB_MKENUMS) \
 		--template twitter-enum-types.c.in \
