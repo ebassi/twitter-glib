@@ -1,20 +1,72 @@
 #ifndef __TWITTER_VERSION_H__
 #define __TWITTER_VERSION_H__
 
+/**
+ * SECTION:twitter-version
+ * @short_description: Versioning API
+ *
+ * Twitter-GLib provides some API and definitions for compile-time
+ * version checking.
+ */
+
+/**
+ * TWITTER_GLIB_MAJOR_VERSION:
+ *
+ * Major version of Twitter-GLib, e.g. 1 in "1.2.3"
+ */
 #define TWITTER_GLIB_MAJOR_VERSION      (@TWITTER_MAJOR_VERSION@)
 
+/**
+ * TWITTER_GLIB_MINOR_VERSION:
+ *
+ * Minor version of Twitter-GLib, e.g. 2 in "1.2.3"
+ */
 #define TWITTER_GLIB_MINOR_VERSION      (@TWITTER_MINOR_VERSION@)
 
+/**
+ * TWITTER_GLIB_MICRO_VERSION:
+ *
+ * Micro version of Twitter-GLib, e.g. 3 in "1.2.3"
+ */
 #define TWITTER_GLIB_MICRO_VERSION      (@TWITTER_MICRO_VERSION@)
 
+/**
+ * TWITTER_GLIB_API_VERSION_S:
+ *
+ * Version of the API of Twitter-GLib
+ */
 #define TWITTER_GLIB_API_VERSION_S      "@TWITTER_API_VERSION@"
 
+/**
+ * TWITTER_GLIB_VERSION_S:
+ *
+ * Stringified version of Twitter-GLib, e.g. "1.2.3".
+ *
+ * Useful for display.
+ */
 #define TWITTER_GLIB_VERSION_S          "@TWITTER_VERSION@"
 
+/**
+ * TWITTER_GLIB_VERSION_HEX:
+ *
+ * Hexadecimally encoded version of Twitter-GLib, e.g. 0x01020300"
+ *
+ * Useful for comparisons.
+ */
 #define TWITTER_GLIB_VERSION_HEX        (TWITTER_GLIB_MAJOR_VERSION << 24 | \
                                          TWITTER_GLIB_MINOR_VERSION << 16 | \
                                          TWITTER_GLIB_MICRO_VERSION <<  8)
 
+/**
+ * TWITTER_GLIB_CHECK_VERSION:
+ * @major: major component of the version to check
+ * @minor: minor component of the version to check
+ * @micro: micro component of the version to check
+ *
+ * Checks whether the decomposed version (@major, @minor, @micro) is
+ * bigger than the version of Twitter-GLib. This is a compile-time
+ * check only.
+ */
 #define TWITTER_GLIB_CHECK_VERSION(major,minor,micro)   \
         (TWITTER_GLIB_MAJOR_VERSION >= (major) ||       \
          (TWITTER_GLIB_MAJOR_VERSION == (major) &&      \
