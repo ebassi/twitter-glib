@@ -146,12 +146,30 @@ twitter_timeline_build (TwitterTimeline *timeline,
   priv->status_list = status_list;
 }
 
+/**
+ * twitter_timeline_new:
+ *
+ * Creates a new, empty #TwitterTimeline
+ *
+ * Return value: the newly created #TwitterTimeline. Use g_object_unref()
+ *   to free the resources it allocates
+ */
 TwitterTimeline *
 twitter_timeline_new (void)
 {
   return g_object_new (TWITTER_TYPE_TIMELINE, NULL);
 }
 
+/**
+ * twitter_timeline_new_from_data:
+ * @buffer: a %NULL-terminated string containing the JSON description
+ *   of a timeline
+ *
+ * Creates a new #TwitterTimeline from its JSON representation
+ *
+ * Return value: the newly created #TwitterTimeline. Use g_object_unref()
+ *   to free the resources it allocates
+ */
 TwitterTimeline *
 twitter_timeline_new_from_data (const gchar *buffer)
 {
@@ -180,6 +198,15 @@ twitter_timeline_new_from_data (const gchar *buffer)
   return retval;
 }
 
+/**
+ * twitter_timeline_load_from_data:
+ * @timeline: a #TwitterTimeline
+ * @buffer: a %NULL-terminated string containing the JSON description
+ *   of a timeline
+ *
+ * Updates @timeline from a JSON representation. All previous
+ * content will be removed and disposed
+ */
 void
 twitter_timeline_load_from_data (TwitterTimeline *timeline,
                                  const gchar     *buffer)
@@ -207,6 +234,14 @@ twitter_timeline_load_from_data (TwitterTimeline *timeline,
   g_object_unref (parser);
 }
 
+/**
+ * twitter_timeline_get_count:
+ * @timeline: a #TwitterTimeline
+ *
+ * Retrieves the number of #TwitterStatus instances inside @timeline
+ *
+ * Return value: the number of statuses
+ */
 guint
 twitter_timeline_get_count (TwitterTimeline *timeline)
 {
@@ -215,6 +250,16 @@ twitter_timeline_get_count (TwitterTimeline *timeline)
   return g_hash_table_size (timeline->priv->status_by_id);
 }
 
+/**
+ * twitter_timeline_get_id:
+ * @timeline: a #TwitterTimeline
+ * @id: a status id
+ *
+ * Retrieves the #TwitterStatus with the given @id, if present
+ * inside the timeline
+ *
+ * Return value: a #TwitterStatus or %NULL
+ */
 TwitterStatus *
 twitter_timeline_get_id (TwitterTimeline *timeline,
                          guint            id)
@@ -225,6 +270,15 @@ twitter_timeline_get_id (TwitterTimeline *timeline,
                               GUINT_TO_POINTER (id));
 }
 
+/**
+ * twitter_timeline_get_pos:
+ * @timeline: a #TwitterTimeline
+ * @index_: the position in the timeline
+ *
+ * Retrieves the #TwitterStatus at the given @index_
+ *
+ * Return value: a #TwitterStatus
+ */
 TwitterStatus *
 twitter_timeline_get_pos (TwitterTimeline *timeline,
                           gint             index_)
@@ -243,6 +297,17 @@ twitter_timeline_get_pos (TwitterTimeline *timeline,
     }
 }
 
+/**
+ * twitter_timeline_get_all:
+ * @timeline: a #TwitterTimeline
+ *
+ * Retrieves all the #TwitterStatus instances inside @timeline
+ *
+ * Return value: a copy of the list of statuses. The #TwitterStatus
+ *   instances inside the returned list are owned by the timeline
+ *   and should not be modified or freed. Use g_list_free() to free
+ *   the resources allocated by the list
+ */
 GList *
 twitter_timeline_get_all (TwitterTimeline *timeline)
 {
