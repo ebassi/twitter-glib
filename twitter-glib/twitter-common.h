@@ -35,6 +35,12 @@ typedef struct _TwitterUser             TwitterUser;
 typedef struct _TwitterUserPrivate      TwitterUserPrivate;
 typedef struct _TwitterUserClass        TwitterUserClass;
 
+/**
+ * TwitterUser:
+ *
+ * The #TwitterUser struct contains only private data and
+ * should only be accessed through the provided API.
+ */
 struct _TwitterUser
 {
   /*< private >*/
@@ -43,11 +49,18 @@ struct _TwitterUser
   TwitterUserPrivate *priv;
 };
 
+/**
+ * TwitterUserClass:
+ * @changed: class handler for the #TwitterUser::changed signal
+ *
+ * The #TwitterUserClass struct contains only private data
+ */
 struct _TwitterUserClass
 {
   /*< private >*/
   GInitiallyUnownedClass parent_class;
 
+  /*< public >*/
   void (* changed) (TwitterUser *user);
 };
 
@@ -63,17 +76,32 @@ typedef struct _TwitterStatus           TwitterStatus;
 typedef struct _TwitterStatusPrivate    TwitterStatusPrivate;
 typedef struct _TwitterStatusClass      TwitterStatusClass;
 
+/**
+ * TwitterStatus:
+ *
+ * The #TwitterStatus struct contains only private data and should
+ * only be accessed through the provided API
+ */
 struct _TwitterStatus
 {
+  /*< private >*/
   GInitiallyUnowned parent_instance;
 
   TwitterStatusPrivate *priv;
 };
 
+/**
+ * TwitterStatusClass:
+ * @changed: class handler for the #TwitterStatus::changed signal
+ *
+ * The #TwitterStatusClass struct contains only private data
+ */
 struct _TwitterStatusClass
 {
+  /*< private >*/
   GInitiallyUnownedClass parent_class;
 
+  /*< public >*/
   void (* changed) (TwitterStatus);
 };
 
