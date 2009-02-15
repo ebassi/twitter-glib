@@ -35,15 +35,28 @@ typedef struct _TwitterTimeline         TwitterTimeline;
 typedef struct _TwitterTimelinePrivate  TwitterTimelinePrivate;
 typedef struct _TwitterTimelineClass    TwitterTimelineClass;
 
+/**
+ * TwitterTimeline:
+ *
+ * The #TwitterTimeline struct contains only private data
+ * and should only be accessed through the provided API
+ */
 struct _TwitterTimeline
 {
+  /*< private >*/
   GObject parent_instance;
 
   TwitterTimelinePrivate *priv;
 };
 
+/**
+ * TwitterTimelineClass:
+ *
+ * The #TwitterTimelineClass contains only private data
+ */
 struct _TwitterTimelineClass
 {
+  /*< private >*/
   GObjectClass parent_class;
 };
 

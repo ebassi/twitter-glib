@@ -16,6 +16,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+/**
+ * SECTION:twitter-timeline
+ * @short_description: A class representing a collection of Statuses
+ *
+ * #TwitterTimeline is a class that represents a list of Status
+ * messages coming from Twitter
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
