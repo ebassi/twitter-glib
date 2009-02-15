@@ -68,6 +68,8 @@ AC_FUNC_MALLOC
 AC_FUNC_MMAP
 AC_PATH_PROG([GLIB_GENMARSHAL], [glib-genmarshal])
 AC_PATH_PROG([GLIB_MKENUMS], [glib-mkenums])
+AC_PATH_PROG([GTESTER], [gtester])
+AC_PATH_PROG([GTESTER_REPORT], [gtester-report])
 AC_CHECK_FUNCS([strptime localtime_r])
 
 PKG_CHECK_MODULES(TWITTER, gobject-2.0 >= glib_req_version        dnl
