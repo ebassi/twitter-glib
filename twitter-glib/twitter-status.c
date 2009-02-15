@@ -387,15 +387,17 @@ twitter_status_new_from_node (JsonNode *node)
   return retval;
 }
 
-void
-twitter_status_load_from_data (TwitterStatus *status,
-                               const gchar   *buffer)
+gboolean
+twitter_status_load_from_data (TwitterStatus  *status,
+                               const gchar    *buffer,
+                               GError        **error)
 {
   JsonParser *parser;
   GError *parse_error;
+  gboolean retval = TRUE;
 
-  g_return_if_fail (TWITTER_IS_STATUS (status));
-  g_return_if_fail (buffer != NULL);
+  g_return_val_if_fail (TWITTER_IS_STATUS (status), FALSE);
+  g_return_val_if_fail (buffer != NULL, FALSE);
 
   twitter_status_clean (status);
 
@@ -404,14 +406,21 @@ twitter_status_load_from_data (TwitterStatus *status,
   json_parser_load_from_data (parser, buffer, -1, &parse_error);
   if (parse_error)
     {
-      g_warning ("Unable to parse data into a status: %s",
-                 parse_error->message);
+      g_set_error (error, TWITTER_ERROR,
+                   TWITTER_ERROR_PARSE_ERROR,
+                   "Parse error  (%s)",
+                   parse_error->message);
+
       g_error_free (parse_error);
+
+      retval = FALSE;
     }
   else
     twitter_status_build (status, json_parser_get_root (parser));
 
   g_object_unref (parser);
+
+  return retval;
 }
 
 TwitterUser *

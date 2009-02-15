@@ -27,8 +27,11 @@ test_user_load (void)
   if (g_test_trap_fork (0, G_TEST_TRAP_SILENCE_STDOUT | G_TEST_TRAP_SILENCE_STDERR))
     {
       TwitterUser *user = twitter_user_new ();
+      GError *error = NULL;
 
-      twitter_user_load_from_data (user, valid);
+      twitter_user_load_from_data (user, valid, &error);
+      if (error)
+        exit (1);
 
       g_print ("name=%s", twitter_user_get_name (user));
 

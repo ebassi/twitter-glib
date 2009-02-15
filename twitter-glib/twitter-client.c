@@ -801,6 +801,7 @@ get_status_cb (SoupSession *session,
   else
     {
       gboolean retval = FALSE;
+      GError *error = NULL;
       gchar *buffer;
 
       if (requires_auth && !priv->auth_complete)
@@ -818,10 +819,13 @@ get_status_cb (SoupSession *session,
       if (G_UNLIKELY (!buffer))
         g_warning ("No data received");
       else
-        twitter_status_load_from_data (closure->status, buffer);
+        twitter_status_load_from_data (closure->status, buffer, &error);
 
       g_signal_emit (client, client_signals[STATUS_RECEIVED], 0,
-                     closure->status, NULL);
+                     closure->status, error);
+
+      if (error)
+        g_error_free (error);
 
       g_free (buffer);
     }
@@ -1214,6 +1218,7 @@ get_user_cb (SoupSession *session,
   else
     {
       gboolean retval = FALSE;
+      GError *error = NULL;
       gchar *buffer;
 
       if (requires_auth && !priv->auth_complete)
@@ -1231,10 +1236,15 @@ get_user_cb (SoupSession *session,
       if (G_UNLIKELY (!buffer))
         g_warning ("No data received");
       else
-        twitter_user_load_from_data (closure->user, buffer);
+        {
+          twitter_user_load_from_data (closure->user, buffer, &error);
 
-      g_signal_emit (client, client_signals[USER_RECEIVED], 0,
-                     closure->user, NULL);
+          g_signal_emit (client, client_signals[USER_RECEIVED], 0,
+                         closure->user, error);
+
+          if (error)
+            g_error_free (error);
+        }
 
       g_free (buffer);
     }

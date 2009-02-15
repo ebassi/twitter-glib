@@ -66,32 +66,33 @@ struct _TwitterUserClass
 GType                 twitter_user_get_type              (void) G_GNUC_CONST;
 
 TwitterUser *         twitter_user_new                   (void);
-TwitterUser *         twitter_user_new_from_data         (const gchar *buffer);
+TwitterUser *         twitter_user_new_from_data         (const gchar  *buffer);
 
-void                  twitter_user_load_from_data        (TwitterUser *user,
-                                                          const gchar *buffer);
+gboolean              twitter_user_load_from_data        (TwitterUser  *user,
+                                                          const gchar  *buffer,
+                                                          GError      **error);
 
-G_CONST_RETURN gchar *twitter_user_get_name              (TwitterUser *user);
-G_CONST_RETURN gchar *twitter_user_get_url               (TwitterUser *user);
-G_CONST_RETURN gchar *twitter_user_get_description       (TwitterUser *user);
-G_CONST_RETURN gchar *twitter_user_get_location          (TwitterUser *user);
-G_CONST_RETURN gchar *twitter_user_get_screen_name       (TwitterUser *user);
-G_CONST_RETURN gchar *twitter_user_get_profile_image_url (TwitterUser *user);
-guint                 twitter_user_get_id                (TwitterUser *user);
-gboolean              twitter_user_get_protected         (TwitterUser *user);
+G_CONST_RETURN gchar *twitter_user_get_name              (TwitterUser  *user);
+G_CONST_RETURN gchar *twitter_user_get_url               (TwitterUser  *user);
+G_CONST_RETURN gchar *twitter_user_get_description       (TwitterUser  *user);
+G_CONST_RETURN gchar *twitter_user_get_location          (TwitterUser  *user);
+G_CONST_RETURN gchar *twitter_user_get_screen_name       (TwitterUser  *user);
+G_CONST_RETURN gchar *twitter_user_get_profile_image_url (TwitterUser  *user);
+guint                 twitter_user_get_id                (TwitterUser  *user);
+gboolean              twitter_user_get_protected         (TwitterUser  *user);
 
-TwitterStatus *       twitter_user_get_status            (TwitterUser *user);
+TwitterStatus *       twitter_user_get_status            (TwitterUser  *user);
 
-gboolean              twitter_user_get_following         (TwitterUser *user);
-guint                 twitter_user_get_friends_count     (TwitterUser *user);
-guint                 twitter_user_get_statuses_count    (TwitterUser *user);
-guint                 twitter_user_get_followers_count   (TwitterUser *user);
-guint                 twitter_user_get_favorites_count   (TwitterUser *user);
-G_CONST_RETURN gchar *twitter_user_get_created_at        (TwitterUser *user);
-G_CONST_RETURN gchar *twitter_user_get_time_zone         (TwitterUser *user);
-gint                  twitter_user_get_utc_offset        (TwitterUser *user);
+gboolean              twitter_user_get_following         (TwitterUser  *user);
+guint                 twitter_user_get_friends_count     (TwitterUser  *user);
+guint                 twitter_user_get_statuses_count    (TwitterUser  *user);
+guint                 twitter_user_get_followers_count   (TwitterUser  *user);
+guint                 twitter_user_get_favorites_count   (TwitterUser  *user);
+G_CONST_RETURN gchar *twitter_user_get_created_at        (TwitterUser  *user);
+G_CONST_RETURN gchar *twitter_user_get_time_zone         (TwitterUser  *user);
+gint                  twitter_user_get_utc_offset        (TwitterUser  *user);
 
-GdkPixbuf *           twitter_user_get_profile_image     (TwitterUser *user);
+GdkPixbuf *           twitter_user_get_profile_image     (TwitterUser  *user);
 
 G_END_DECLS
 
