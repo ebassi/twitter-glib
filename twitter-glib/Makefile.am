@@ -1,5 +1,3 @@
-include $(top_srcdir)/Makefile.decl
-
 NULL =
 
 MARSHALFILES = twitter-marshal.c twitter-marshal.h
@@ -118,7 +116,7 @@ DISTCLEANFILES = \
 	twitter-version.h \
 	$(NULL)
 
-EXTRA_DIST += \
+EXTRA_DIST = \
 	twitter-version.h.in \
 	twitter-glib.h \
 	twitter-marshal.list \

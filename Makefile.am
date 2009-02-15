@@ -1,5 +1,3 @@
-include $(top_srcdir)/Makefile.decl
-
 SUBDIRS = twitter-glib doc
 
 if ENABLE_GLIB_TEST
@@ -16,7 +14,7 @@ twitter-glib-$(TWITTER_API_VERSION).pc: twitter-glib.pc
 pkgconfig_DATA = $(pcfiles)
 pkgconfigdir = $(libdir)/pkgconfig
 
-EXTRA_DIST += twitter-glib.pc.in
+EXTRA_DIST = twitter-glib.pc.in
 
 CLEANFILES = $(pcfiles) test-report.xml
 
