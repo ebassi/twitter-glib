@@ -25,7 +25,43 @@
 
 G_BEGIN_DECLS
 
+#define TWITTER_TYPE_USER               (twitter_user_get_type ())
+#define TWITTER_USER(obj)               (G_TYPE_CHECK_INSTANCE_CAST ((obj), TWITTER_TYPE_USER, TwitterUser))
+#define TWITTER_IS_USER(obj)            (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TWITTER_TYPE_USER))
+#define TWITTER_USER_CLASS(klass)       (G_TYPE_CHECK_CLASS_CAST ((klass), TWITTER_TYPE_USER, TwitterUserClass))
+#define TWITTER_IS_USER_CLASS(klass)    (G_TYPE_CHECK_CLASS_TYPE ((klass), TWITTER_TYPE_USER))
+#define TWITTER_USER_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS ((obj), TWITTER_TYPE_USER, TwitterUserClass))
+
 /* TwitterUser is declared inside twitter-common.h */
+
+/**
+ * TwitterUser:
+ *
+ * The #TwitterUser struct contains only private data and
+ * should only be accessed through the provided API.
+ */
+struct _TwitterUser
+{
+  /*< private >*/
+  GInitiallyUnowned parent_instance;
+
+  TwitterUserPrivate *priv;
+};
+
+/**
+ * TwitterUserClass:
+ * @changed: class handler for the #TwitterUser::changed signal
+ *
+ * The #TwitterUserClass struct contains only private data
+ */
+struct _TwitterUserClass
+{
+  /*< private >*/
+  GInitiallyUnownedClass parent_class;
+
+  /*< public >*/
+  void (* changed) (TwitterUser *user);
+};
 
 GType                 twitter_user_get_type              (void) G_GNUC_CONST;
 

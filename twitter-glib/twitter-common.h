@@ -24,86 +24,14 @@
 G_BEGIN_DECLS
 
 /* TwitterUser */
-#define TWITTER_TYPE_USER               (twitter_user_get_type ())
-#define TWITTER_USER(obj)               (G_TYPE_CHECK_INSTANCE_CAST ((obj), TWITTER_TYPE_USER, TwitterUser))
-#define TWITTER_IS_USER(obj)            (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TWITTER_TYPE_USER))
-#define TWITTER_USER_CLASS(klass)       (G_TYPE_CHECK_CLASS_CAST ((klass), TWITTER_TYPE_USER, TwitterUserClass))
-#define TWITTER_IS_USER_CLASS(klass)    (G_TYPE_CHECK_CLASS_TYPE ((klass), TWITTER_TYPE_USER))
-#define TWITTER_USER_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS ((obj), TWITTER_TYPE_USER, TwitterUserClass))
-
 typedef struct _TwitterUser             TwitterUser;
 typedef struct _TwitterUserPrivate      TwitterUserPrivate;
 typedef struct _TwitterUserClass        TwitterUserClass;
 
-/**
- * TwitterUser:
- *
- * The #TwitterUser struct contains only private data and
- * should only be accessed through the provided API.
- */
-struct _TwitterUser
-{
-  /*< private >*/
-  GInitiallyUnowned parent_instance;
-
-  TwitterUserPrivate *priv;
-};
-
-/**
- * TwitterUserClass:
- * @changed: class handler for the #TwitterUser::changed signal
- *
- * The #TwitterUserClass struct contains only private data
- */
-struct _TwitterUserClass
-{
-  /*< private >*/
-  GInitiallyUnownedClass parent_class;
-
-  /*< public >*/
-  void (* changed) (TwitterUser *user);
-};
-
 /* TwitterStatus */
-#define TWITTER_TYPE_STATUS             (twitter_status_get_type ())
-#define TWITTER_STATUS(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), TWITTER_TYPE_STATUS, TwitterStatus))
-#define TWITTER_IS_STATUS(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TWITTER_TYPE_STATUS))
-#define TWITTER_STATUS_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass), TWITTER_TYPE_STATUS, TwitterStatusClass))
-#define TWITTER_IS_STATUS_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), TWITTER_TYPE_STATUS))
-#define TWITTER_STATUS_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), TWITTER_TYPE_STATUS, TwitterStatusClass))
-
 typedef struct _TwitterStatus           TwitterStatus;
 typedef struct _TwitterStatusPrivate    TwitterStatusPrivate;
 typedef struct _TwitterStatusClass      TwitterStatusClass;
-
-/**
- * TwitterStatus:
- *
- * The #TwitterStatus struct contains only private data and should
- * only be accessed through the provided API
- */
-struct _TwitterStatus
-{
-  /*< private >*/
-  GInitiallyUnowned parent_instance;
-
-  TwitterStatusPrivate *priv;
-};
-
-/**
- * TwitterStatusClass:
- * @changed: class handler for the #TwitterStatus::changed signal
- *
- * The #TwitterStatusClass struct contains only private data
- */
-struct _TwitterStatusClass
-{
-  /*< private >*/
-  GInitiallyUnownedClass parent_class;
-
-  /*< public >*/
-  void (* changed) (TwitterStatus);
-};
 
 /**
  * TWITTER_ERROR:
