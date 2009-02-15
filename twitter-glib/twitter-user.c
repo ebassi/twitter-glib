@@ -16,6 +16,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+/**
+ * SECTION:twitter-user
+ * @short_description: A class representing a single user
+ *
+ * #TwitterUser is a class that represents a user coming from
+ * Twitter.
+ *
+ * #TwitterUser instances should be created by parsing a JSON
+ * description coming from Twitter. Some parts of the user data,
+ * like the #GdkPixbuf of the user's icon, might be lazily loaded
+ * to avoid blocking; once the asynchronous loading has ended, the
+ * #TwitterUser::changed signal is emitted.
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -358,6 +373,13 @@ twitter_user_class_init (TwitterUserClass *klass)
                                                      G_MININT, G_MAXINT, 0,
                                                      G_PARAM_READABLE));
 
+  /**
+   * TwitterUser::changed:
+   * @user: the #TwitterUser that emitted the signal
+   *
+   * The ::changed signal is emitted each time the #TwitterUser
+   * changes after an asynchronous operation.
+   */
   user_signals[CHANGED] =
     g_signal_new ("changed",
                   G_TYPE_FROM_CLASS (gobject_class),
