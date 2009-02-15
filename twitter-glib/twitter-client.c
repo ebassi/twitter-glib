@@ -365,6 +365,20 @@ twitter_client_class_init (TwitterClientClass *klass)
                   _twitter_marshal_BOOLEAN__ENUM,
                   G_TYPE_BOOLEAN, 1,
                   TWITTER_TYPE_AUTH_STATE);
+  /**
+   * TwitterClient::user-verified:
+   * @client: the #TwitterClient that emitted the signal
+   * @is_verified: whether the user credentials are verified
+   * @error: set to a #GError in case of error
+   *
+   * The ::user-verified signal is emitted by @client after
+   * twitter_client_verify_user() has been called.
+   *
+   * The @is_verified argument will be set to %TRUE of %FALSE
+   * depending on the result of the verification. In case of
+   * error, @error will be set to the appropriate #GError;
+   * otherwise it will be %NULL
+   */
   client_signals[USER_VERIFIED] =
     g_signal_new (I_("user-verified"),
                   G_TYPE_FROM_CLASS (gobject_class),
@@ -375,6 +389,19 @@ twitter_client_class_init (TwitterClientClass *klass)
                   G_TYPE_NONE, 2,
                   G_TYPE_BOOLEAN,
                   G_TYPE_POINTER);
+
+  /**
+   * TwitterClient::user-received:
+   * @client: the #TwitterClient that emitted the signal
+   * @user: a #TwitterUser
+   * @error: set to a #GError in case of error
+   *
+   * The ::user-received signal is emitted each time @client
+   * receives a #TwitterUser from the provider.
+   *
+   * In case of error, @error will be set to the appropriate
+   * #GError; otherwise, it will be %NULL
+   */
   client_signals[USER_RECEIVED] =
     g_signal_new (I_("user-received"),
                   G_TYPE_FROM_CLASS (gobject_class),
@@ -385,6 +412,19 @@ twitter_client_class_init (TwitterClientClass *klass)
                   G_TYPE_NONE, 2,
                   TWITTER_TYPE_USER,
                   G_TYPE_POINTER);
+
+  /**
+   * TwitterClient::status-received:
+   * @client: the #TwitterClient that emitted the signal
+   * @user: a #TwitterStatus
+   * @error: set to a #GError in case of error
+   *
+   * The ::status-received signal is emitted each time @client
+   * receives a #TwitterStatus from the provider.
+   *
+   * In case of error, @error will be set to the appropriate
+   * #GError; otherwise, it will be %NULL
+   */
   client_signals[STATUS_RECEIVED] =
     g_signal_new (I_("status-received"),
                   G_TYPE_FROM_CLASS (gobject_class),
@@ -395,6 +435,14 @@ twitter_client_class_init (TwitterClientClass *klass)
                   G_TYPE_NONE, 2,
                   TWITTER_TYPE_STATUS,
                   G_TYPE_POINTER);
+
+  /**
+   * TwitterClient::timeline-complete:
+   * @client: the #TwitterClient that emitted the signal
+   *
+   * The ::timeline-complete signal is emitted at the end of
+   * a timeline request to the provider
+   */
   client_signals[TIMELINE_COMPLETE] =
     g_signal_new (I_("timeline-complete"),
                   G_TYPE_FROM_CLASS (gobject_class),
@@ -572,6 +620,18 @@ twitter_client_queue_message (TwitterClient       *client,
                               data);
 }
 
+/**
+ * twitter_client_new:
+ *
+ * Creates a new #TwitterClient using the default provider.
+ *
+ * It is possible to use the #TwitterClient::authenticate signal
+ * to handle the authentication interactively when needed, or to
+ * use twitter_client_set_user() to set the user credentials.
+ *
+ * Return value: the newly created #TwitterClient. Use g_object_unref()
+ *   to free the allocated resources
+ */
 TwitterClient *
 twitter_client_new (void)
 {
