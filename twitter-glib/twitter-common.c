@@ -39,6 +39,15 @@
 
 #include "twitter-common.h"
 
+/**
+ * twitter_error_from_status:
+ * @status: a Libsoup HTTP status code
+ *
+ * Converts an HTTP status code coming from Libsoup into a
+ * #TwitterError
+ *
+ * Return value: a #TwitterError
+ */
 guint
 twitter_error_from_status (guint status)
 {
@@ -76,6 +85,15 @@ twitter_error_quark (void)
   return g_quark_from_static_string ("twitter-error-quark");
 }
 
+/**
+ * twitter_http_date_from_time_t:
+ * @time_: timestamp, expressed in seconds from the epoch
+ *
+ * Converts a Unix time into an HTTP date
+ *
+ * Return value: a newly allocated string containing the
+ *   HTTP date. Use g_free() when done
+ */
 gchar *
 twitter_http_date_from_time_t (time_t time_)
 {
@@ -89,6 +107,15 @@ twitter_http_date_from_time_t (time_t time_)
   return retval;
 }
 
+/**
+ * twitter_http_date_from_delta:
+ * @seconds: seconds from now
+ *
+ * Creates an HTTP representation of a timestamp @seconds from now
+ *
+ * Return value: a newly allocated string containing the
+ *   HTTP date. Use g_free() when done
+ */
 gchar *
 twitter_http_date_from_delta (gint seconds)
 {
@@ -100,6 +127,14 @@ twitter_http_date_from_delta (gint seconds)
   return twitter_http_date_from_time_t (delta);
 }
 
+/**
+ * twitter_http_date_to_time_t:
+ * @date: a HTTP date string
+ *
+ * Converts a timestamp in HTTP format into a Unix timestamp
+ *
+ * Return value: the Unix timestamp equivalent to the HTTP one
+ */
 time_t
 twitter_http_date_to_time_t (const gchar *date)
 {
@@ -118,6 +153,14 @@ twitter_http_date_to_time_t (const gchar *date)
   return retval;
 }
 
+/**
+ * twitter_http_date_to_delta:
+ * @date: a HTTP date string
+ *
+ * Converts a timestamp in HTTP into seconds from the current time
+ *
+ * Return value: seconds from the current time
+ */
 gint
 twitter_http_date_to_delta (const gchar *date)
 {
@@ -132,6 +175,15 @@ twitter_http_date_to_delta (const gchar *date)
   return (now - res);
 }
 
+/**
+ * twitter_date_to_time_val:
+ * @date: a timestamp coming from Twitter
+ * @time_: return location for a #GTimeVal
+ *
+ * Converts a Twitter date into a #GTimeVal
+ *
+ * Return value: %TRUE if the conversion was successful
+ */
 gboolean
 twitter_date_to_time_val (const gchar *date,
                           GTimeVal    *time_)
