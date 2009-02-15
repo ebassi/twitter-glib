@@ -43,6 +43,7 @@
 /stamp-h1
 /tests/Makefile
 /tests/Makefile.in
+/tests/.deps
 /twitter-glib-1.0.pc
 /twitter-glib.pc
 /twitter-glib/.deps
