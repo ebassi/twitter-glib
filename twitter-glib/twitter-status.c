@@ -16,6 +16,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+/**
+ * SECTION:twitter-status
+ * @short_description: A class representing a single Status message
+ *
+ * #TwitterStatus is a class that represents a Status message coming
+ * from Twitter.
+ *
+ * A #TwitterStatus should be created by parsing the status definition
+ * in JSON format. Some parts of the status values are lazily loaded
+ * to avoid blocking; each time an asynchronous operation finished
+ * the #TwitterStatus::changed signal is emitted.
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -220,6 +234,13 @@ twitter_status_class_init (TwitterStatusClass *klass)
                                                         NULL,
                                                         G_PARAM_READABLE));
 
+  /**
+   * TwitterStatus::changed:
+   * @status: the #TwitterStatus that emitted the signal
+   *
+   * The ::changed signal is emitted each time an asynchronous
+   * loading of the @status is complete
+   */
   status_signals[CHANGED] =
     g_signal_new ("changed",
                   G_TYPE_FROM_CLASS (klass),
