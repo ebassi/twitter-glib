@@ -23,6 +23,7 @@
 /doc/reference/xml
 /doc/reference/tmpl
 /doc/reference/*.stamp
+/doc/reference/*.bak
 /doc/reference/twitter-glib-decl.txt
 /doc/reference/twitter-glib-decl-list.txt
 /doc/reference/twitter-glib-overrides.txt
