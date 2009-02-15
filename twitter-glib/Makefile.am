@@ -6,7 +6,7 @@ MARSHALFILES = twitter-marshal.c twitter-marshal.h
 ENUMFILES = twitter-enum-types.c twitter-enum-types.h
 STAMPFILES = stamp-twitter-marshal.h stamp-twitter-enum-types.h
 
-BUILT_SOURCES = $(MARSHALFILES) $(ENUMFILES)
+BUILT_SOURCES = $(MARSHALFILES) $(ENUMFILES) twitter-version.h
 
 sources_public_h = \
 	$(top_srcdir)/twitter-glib/twitter-common.h \
@@ -110,7 +110,7 @@ libtwitter_glib_@TWITTER_API_VERSION@_la_LDFLAGS = \
 
 libtwitter_glib_@TWITTER_API_VERSION@_la_LIBADD = $(TWITTER_LIBS)
 
-CLEANFILES = $(STAMPFILES) $(BUILT_SOURCES)
+CLEANFILES = $(STAMPFILES) $(MARSHALFILES) $(ENUMFILES)
 
 DISTCLEANFILES = \
 	$(ENUMFILES) \
