@@ -44,6 +44,11 @@
 /tests/Makefile
 /tests/Makefile.in
 /tests/.deps
+/tests/.libs
+/tests/twitter-test
+/tests/twitter-test-results.html
+/tests/twitter-test-results.xml
+/tests/*.o
 /twitter-glib-1.0.pc
 /twitter-glib.pc
 /twitter-glib/.deps
