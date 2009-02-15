@@ -63,17 +63,18 @@ struct _TwitterTimelineClass
 GType            twitter_timeline_get_type       (void) G_GNUC_CONST;
 
 TwitterTimeline *twitter_timeline_new            (void);
-TwitterTimeline *twitter_timeline_new_from_data  (const gchar     *buffer);
+TwitterTimeline *twitter_timeline_new_from_data  (const gchar      *buffer);
 
-void             twitter_timeline_load_from_data (TwitterTimeline *timeline,
-                                                  const gchar     *buffer);
+gboolean         twitter_timeline_load_from_data (TwitterTimeline  *timeline,
+                                                  const gchar      *buffer,
+                                                  GError          **error);
 
-guint            twitter_timeline_get_count      (TwitterTimeline *timeline);
-TwitterStatus *  twitter_timeline_get_id         (TwitterTimeline *timeline,
-                                                  guint            id);
-TwitterStatus *  twitter_timeline_get_pos        (TwitterTimeline *timeline,
-                                                  gint             index_);
-GList *          twitter_timeline_get_all        (TwitterTimeline *timeline);
+guint            twitter_timeline_get_count      (TwitterTimeline  *timeline);
+TwitterStatus *  twitter_timeline_get_id         (TwitterTimeline  *timeline,
+                                                  guint             id);
+TwitterStatus *  twitter_timeline_get_pos        (TwitterTimeline  *timeline,
+                                                  gint              index_);
+GList *          twitter_timeline_get_all        (TwitterTimeline  *timeline);
 
 G_END_DECLS
 

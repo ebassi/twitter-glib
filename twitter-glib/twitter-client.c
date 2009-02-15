@@ -1018,6 +1018,7 @@ get_timeline_cb (SoupSession *session,
   else
     {
       gboolean retval = FALSE;
+      GError *error = NULL;
       gchar *buffer;
 
       if (requires_auth && !priv->auth_complete)
@@ -1033,9 +1034,17 @@ get_timeline_cb (SoupSession *session,
       if (G_UNLIKELY (!buffer))
         g_warning ("No data received");
       else
-        twitter_timeline_load_from_data (closure->timeline, buffer);
+        twitter_timeline_load_from_data (closure->timeline, buffer, &error);
 
-      emit_status_received (client, closure->timeline);
+      if (error)
+        {
+          g_signal_emit (client, client_signals[STATUS_RECEIVED], 0,
+                         NULL, error);
+
+          g_error_free (error);
+        }
+      else
+        emit_status_received (client, closure->timeline);
 
       g_free (buffer);
     }
@@ -1361,6 +1370,7 @@ get_user_list_cb (SoupSession *session,
   else
     {
       gboolean retval = FALSE;
+      GError *error = NULL;
       gchar *buffer;
 
       if (requires_auth && !priv->auth_complete)
@@ -1376,9 +1386,17 @@ get_user_list_cb (SoupSession *session,
       if (G_UNLIKELY (!buffer))
         g_warning ("No data received");
       else
-        twitter_user_list_load_from_data (closure->user_list, buffer);
+        twitter_user_list_load_from_data (closure->user_list, buffer, &error);
 
-      emit_user_received (client, closure->user_list);
+      if (error)
+        {
+          g_signal_emit (client, client_signals[USER_RECEIVED], 0,
+                         NULL, error);
+
+          g_error_free (error);
+        }
+      else
+        emit_user_received (client, closure->user_list);
 
       g_free (buffer);
     }

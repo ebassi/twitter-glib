@@ -63,17 +63,18 @@ struct _TwitterUserListClass
 GType            twitter_user_list_get_type       (void) G_GNUC_CONST;
 
 TwitterUserList *twitter_user_list_new            (void);
-TwitterUserList *twitter_user_list_new_from_data  (const gchar     *buffer);
+TwitterUserList *twitter_user_list_new_from_data  (const gchar      *buffer);
 
-void             twitter_user_list_load_from_data (TwitterUserList *user_list,
-                                                   const gchar     *buffer);
+gboolean         twitter_user_list_load_from_data (TwitterUserList  *user_list,
+                                                   const gchar      *buffer,
+                                                   GError          **error);
 
-guint            twitter_user_list_get_count      (TwitterUserList *user_list);
-TwitterUser   *  twitter_user_list_get_id         (TwitterUserList *user_list,
-                                                   guint            id);
-TwitterUser   *  twitter_user_list_get_pos        (TwitterUserList *user_list,
-                                                   gint             index_);
-GList *          twitter_user_list_get_all        (TwitterUserList *user_list);
+guint            twitter_user_list_get_count      (TwitterUserList  *user_list);
+TwitterUser   *  twitter_user_list_get_id         (TwitterUserList  *user_list,
+                                                   guint             id);
+TwitterUser   *  twitter_user_list_get_pos        (TwitterUserList  *user_list,
+                                                   gint              index_);
+GList *          twitter_user_list_get_all        (TwitterUserList  *user_list);
 
 G_END_DECLS
 

@@ -180,15 +180,17 @@ twitter_user_list_new_from_data (const gchar *buffer)
   return retval;
 }
 
-void
-twitter_user_list_load_from_data (TwitterUserList *user_list,
-                                 const gchar     *buffer)
+gboolean
+twitter_user_list_load_from_data (TwitterUserList  *user_list,
+                                 const gchar       *buffer,
+                                 GError           **error)
 {
   JsonParser *parser;
   GError *parse_error;
+  gboolean retval = TRUE;
 
-  g_return_if_fail (TWITTER_IS_USER_LIST (user_list));
-  g_return_if_fail (buffer != NULL);
+  g_return_val_if_fail (TWITTER_IS_USER_LIST (user_list), FALSE);
+  g_return_val_if_fail (buffer != NULL, FALSE);
 
   twitter_user_list_clean (user_list);
 
@@ -197,14 +199,20 @@ twitter_user_list_load_from_data (TwitterUserList *user_list,
   json_parser_load_from_data (parser, buffer, -1, &parse_error);
   if (parse_error)
     {
-      g_warning ("Unable to parse data into a user list: %s",
-                 parse_error->message);
+      g_set_error (error, TWITTER_ERROR,
+                   TWITTER_ERROR_PARSE_ERROR,
+                   "Parse error (%s)",
+                   parse_error->message);
       g_error_free (parse_error);
+
+      retval = FALSE;
     }
   else
     twitter_user_list_build (user_list, json_parser_get_root (parser));
 
   g_object_unref (parser);
+
+  return retval;
 }
 
 guint

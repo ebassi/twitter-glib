@@ -203,19 +203,26 @@ twitter_timeline_new_from_data (const gchar *buffer)
  * @timeline: a #TwitterTimeline
  * @buffer: a %NULL-terminated string containing the JSON description
  *   of a timeline
+ * @error: return location for a #GError, or %NULL
  *
  * Updates @timeline from a JSON representation. All previous
- * content will be removed and disposed
+ * content will be removed and disposed. On error, @error will
+ * be set accordingly.
+ *
+ * Return value: %TRUE if @buffer was successfully parsed, %FALSE
+ *   otherwise
  */
-void
-twitter_timeline_load_from_data (TwitterTimeline *timeline,
-                                 const gchar     *buffer)
+gboolean
+twitter_timeline_load_from_data (TwitterTimeline  *timeline,
+                                 const gchar      *buffer,
+                                 GError          **error)
 {
   JsonParser *parser;
   GError *parse_error;
+  gboolean retval = TRUE;
 
-  g_return_if_fail (TWITTER_IS_TIMELINE (timeline));
-  g_return_if_fail (buffer != NULL);
+  g_return_val_if_fail (TWITTER_IS_TIMELINE (timeline), FALSE);
+  g_return_val_if_fail (buffer != NULL, FALSE);
 
   twitter_timeline_clean (timeline);
 
@@ -224,14 +231,20 @@ twitter_timeline_load_from_data (TwitterTimeline *timeline,
   json_parser_load_from_data (parser, buffer, -1, &parse_error);
   if (parse_error)
     {
-      g_warning ("Unable to parse data into a timeline: %s",
-                 parse_error->message);
+      g_set_error (error, TWITTER_ERROR,
+                   TWITTER_ERROR_PARSE_ERROR,
+                   "Parse error (%s)",
+                   parse_error->message);
       g_error_free (parse_error);
+
+      retval = FALSE;
     }
   else
     twitter_timeline_build (timeline, json_parser_get_root (parser));
 
   g_object_unref (parser);
+
+  return retval;
 }
 
 /**
