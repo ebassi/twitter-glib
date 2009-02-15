@@ -16,6 +16,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+/**
+ * SECTION:twitter-user-list
+ * @short_description: A class representing a collection of users
+ *
+ * #TwitterUserList is a class collecting a list of #TwitterUser
+ * instances.
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

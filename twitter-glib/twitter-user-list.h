@@ -35,15 +35,28 @@ typedef struct _TwitterUserList         TwitterUserList;
 typedef struct _TwitterUserListPrivate  TwitterUserListPrivate;
 typedef struct _TwitterUserListClass    TwitterUserListClass;
 
+/**
+ * TwitterUserList:
+ *
+ * The #TwitterUserList struct contains only private data
+ * and should only be accessed through the provided API
+ */
 struct _TwitterUserList
 {
+  /*< private >*/
   GObject parent_instance;
 
   TwitterUserListPrivate *priv;
 };
 
+/**
+ * TwitterUserListClass:
+ *
+ * The #TwitterUserListClass struct contains only private data
+ */
 struct _TwitterUserListClass
 {
+  /*< private >*/
   GObjectClass parent_class;
 };
 
