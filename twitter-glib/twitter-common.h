@@ -50,6 +50,8 @@ typedef struct _TwitterStatusClass      TwitterStatusClass;
  * @TWITTER_ERROR_FAILED: Operation failed
  * @TWITTER_ERROR_NOT_MODIFIED: The result of the operation hasn't been
  *    modified since the last query
+ * @TWITTER_ERROR_PARSE_ERROR: Unable to parse the JSON data coming
+ *    from the provider
  *
  * Twitter error enumeration.
  */
@@ -60,7 +62,8 @@ typedef enum {
   TWITTER_ERROR_NOT_FOUND,
   TWITTER_ERROR_TIMED_OUT,
   TWITTER_ERROR_FAILED,
-  TWITTER_ERROR_NOT_MODIFIED
+  TWITTER_ERROR_NOT_MODIFIED,
+  TWITTER_ERROR_PARSE_ERROR
 } TwitterError;
 
 GQuark twitter_error_quark (void);
