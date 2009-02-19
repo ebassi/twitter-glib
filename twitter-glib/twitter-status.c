@@ -297,12 +297,9 @@ twitter_status_build (TwitterStatus *status,
   member = json_object_get_member (obj, "user");
   if (member)
     {
-      priv->user = twitter_user_new_from_node (member);
-      g_object_ref_sink (priv->user);
+      TwitterUser *user = twitter_user_new_from_node (member);
 
-      priv->user_changed_id = g_signal_connect (priv->user, "changed",
-                                                G_CALLBACK (user_changed_cb),
-                                                status);
+      _twitter_status_set_user (status, user);
     }
 
   member = json_object_get_member (obj, "source");
@@ -493,4 +490,28 @@ twitter_status_get_url (TwitterStatus *status)
   g_return_val_if_fail (TWITTER_IS_STATUS (status), NULL);
 
   return status->priv->url;
+}
+
+void
+_twitter_status_set_user (TwitterStatus *status,
+                          TwitterUser   *user)
+{
+  TwitterStatusPrivate *priv = status->priv;
+
+  if (priv->user)
+    {
+      if (priv->user_changed_id)
+        {
+          g_signal_handler_disconnect (priv->user, priv->user_changed_id);
+          priv->user_changed_id = 0;
+        }
+
+      g_object_unref (priv->user);
+      priv->user = NULL;
+    }
+
+  priv->user = g_object_ref_sink (user);
+  priv->user_changed_id = g_signal_connect (priv->user, "changed",
+                                            G_CALLBACK (user_changed_cb),
+                                            status);
 }

@@ -464,6 +464,12 @@ twitter_user_build (TwitterUser *user,
     {
       priv->status = twitter_status_new_from_node (member);
       g_object_ref_sink (priv->status);
+
+      /* back link, so that we can maintain the invariant:
+       *
+       *  user == user.status.user
+       */
+      _twitter_status_set_user (priv->status, user);
     }
 
   member = json_object_get_member (obj, "following");

@@ -30,6 +30,9 @@ G_BEGIN_DECLS
 TwitterStatus *twitter_status_new_from_node (JsonNode *node);
 TwitterUser   *twitter_user_new_from_node   (JsonNode *node);
 
+void           _twitter_status_set_user     (TwitterStatus *status,
+                                             TwitterUser   *user);
+
 G_END_DECLS
 
 #endif /* __TWITTER_PRIVATE_H__ */
