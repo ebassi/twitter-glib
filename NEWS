@@ -1,6 +1,32 @@
-Tweet 0.2.0 - "Finally Woken"
-===============================================================================
-* Initial release of Tweet
-* Support for the friends timeline, user's timeline, favorites and replies
-* Allow to reply and mark a status as a favorite
-* Send status
+Twitter-GLib 0.9.4
+-------------------------------------------------------------------------------
+
+Emmanuele Bassi (27):
+      Post-release bump to 0.9.3
+      Allow specifying a different base URL for the API
+      Support the Identi.ca provider
+      [docs] Document Error values
+      [docs] Add unused symbols
+      [build] Add twitter-version.h to BUILT_SOURCES
+      [docs] Add documentation annotations/1
+      [docs] Add documentation annotations/2
+      [docs] Add documentation annotations/3
+      [docs] Add documentation annotations/4
+      [docs] Add documentation annotations/5
+      [docs] Add documentation annotations/6
+      [docs] Annotate TwitterClient signals
+      [ignore] Add the gtk-doc backup files
+      [docs] Add full coverage of TwitterTimeline
+      Move User and Status definitions to their headers
+      [docs] Document the common API functions
+      [build] Remove Makefile.decl
+      [build] Check for GTest binaries
+      [tests] Start the Twitter-GLib test suite
+      [ignore] Add libtool directory under tests/
+      Add PARSE_ERROR to the error enumeration
+      Allow recoverable error handling for parsing user and status
+      Finish allowing recoverable parse error
+      [ignore] Add files under tests/
+      [user] Back link the user to the status
+      [status] Reuse the user private setter
+
