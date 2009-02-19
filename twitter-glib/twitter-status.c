@@ -99,13 +99,15 @@ twitter_status_finalize (GObject *gobject)
   g_free (priv->created_at);
   g_free (priv->text);
 
-  if (priv->user)
-    {
-      g_signal_handler_disconnect (priv->user, priv->user_changed_id);
-      g_object_unref (priv->user);
-    }
-
   G_OBJECT_CLASS (twitter_status_parent_class)->finalize (gobject);
+}
+
+static void
+twitter_status_dispose (GObject *gobject)
+{
+  _twitter_status_set_user (TWITTER_STATUS (gobject), NULL);
+
+  G_OBJECT_CLASS (twitter_status_parent_class)->dispose (gobject);
 }
 
 static void
@@ -168,6 +170,7 @@ twitter_status_class_init (TwitterStatusClass *klass)
   g_type_class_add_private (klass, sizeof (TwitterStatusPrivate));
 
   gobject_class->get_property = twitter_status_get_property;
+  gobject_class->dispose      = twitter_status_dispose;
   gobject_class->finalize     = twitter_status_finalize;
 
   g_object_class_install_property (gobject_class,
@@ -274,11 +277,7 @@ twitter_status_clean (TwitterStatus *status)
   g_free (priv->created_at);
   g_free (priv->text);
 
-  if (priv->user)
-    {
-      g_signal_handler_disconnect (priv->user, priv->user_changed_id);
-      g_object_unref (priv->user);
-    }
+  _twitter_status_set_user (status, NULL);
 }
 
 static void
@@ -498,6 +497,9 @@ _twitter_status_set_user (TwitterStatus *status,
 {
   TwitterStatusPrivate *priv = status->priv;
 
+  g_return_if_fail (TWITTER_IS_STATUS (status));
+  g_return_if_fail (user == NULL || TWITTER_IS_USER (user));
+
   if (priv->user)
     {
       if (priv->user_changed_id)
@@ -510,8 +512,11 @@ _twitter_status_set_user (TwitterStatus *status,
       priv->user = NULL;
     }
 
-  priv->user = g_object_ref_sink (user);
-  priv->user_changed_id = g_signal_connect (priv->user, "changed",
-                                            G_CALLBACK (user_changed_cb),
-                                            status);
+  if (user)
+    {
+      priv->user = g_object_ref_sink (user);
+      priv->user_changed_id = g_signal_connect (priv->user, "changed",
+                                                G_CALLBACK (user_changed_cb),
+                                                status);
+    }
 }
