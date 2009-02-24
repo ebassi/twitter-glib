@@ -249,6 +249,12 @@ twitter_client_constructed (GObject *gobject)
   priv->session_async =
     soup_session_async_new_with_options ("user-agent", user_agent, NULL);
 
+#ifdef HAVE_LIBSOUP_GNOME
+  /* use the proxy support in libsoup-gnome */
+  soup_session_add_feature_by_type (priv->session_async,
+                                    SOUP_TYPE_PROXY_RESOLVER_GNOME);
+#endif /* HAVE_LIBSOUP_GNOME */
+
   if (G_UNLIKELY (priv->base_url == NULL))
     {
       switch (priv->provider)
