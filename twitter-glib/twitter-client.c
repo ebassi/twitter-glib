@@ -65,6 +65,10 @@
 
 #include <libsoup/soup.h>
 
+#ifdef HAVE_LIBSOUP_GNOME
+#include <libsoup/soup-gnome.h>
+#endif
+
 #include "twitter-api.h"
 #include "twitter-client.h"
 #include "twitter-common.h"
