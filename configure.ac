@@ -72,10 +72,21 @@ AC_PATH_PROG([GTESTER], [gtester])
 AC_PATH_PROG([GTESTER_REPORT], [gtester-report])
 AC_CHECK_FUNCS([strptime localtime_r])
 
+libsoup_pkg_name=""
+PKG_CHECK_EXISTS([libsoup-gnome-2.4],
+                 [libsoup_pkg_name=libsoup-gnome-2.4],
+                 [libsoup_pkg_name=libsoup-2.4])
+
+if test "x$libsoup_pkg_name" = "xlibsoup-gnome-2.4"; then
+  AC_DEFINE([HAVE_LIBSOUP_GNOME], [1], [Whether Twitter-GLib uses libsoup-gnome])
+fi
+
+AC_SUBST([libsoup_pkg_name])
+
 PKG_CHECK_MODULES(TWITTER, gobject-2.0 >= glib_req_version        dnl
                            gio-2.0 >= glib_req_version            dnl
                            json-glib-1.0 >= json_glib_req_version dnl
-                           libsoup-gnome-2.4 >= soup_req_version  dnl
+                           $libsoup_pkg_name >= soup_req_version  dnl
                            gdk-pixbuf-2.0)
 AC_SUBST(TWITTER_CFLAGS)
 AC_SUBST(TWITTER_LIBS)
@@ -149,4 +160,5 @@ echo "               Debug level: ${enable_debug}"
 echo " Maintainer Compiler flags: ${enable_maintainer_flags}"
 echo "       Build API reference: ${enable_gtk_doc}"
 echo "         Enable test suite: ${enable_glibtest}"
+echo "        Libsoup dependency: ${libsoup_pkg_name}"
 echo ""
