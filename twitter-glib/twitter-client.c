@@ -100,6 +100,8 @@ struct _TwitterClientPrivate
 
   gulong auth_id;
 
+  gulong last_handle_id;
+
   guint auth_complete : 1;
 };
 
@@ -378,6 +380,7 @@ twitter_client_class_init (TwitterClientClass *klass)
   /**
    * TwitterClient::user-verified:
    * @client: the #TwitterClient that emitted the signal
+   * @handle: the handle of the request
    * @is_verified: whether the user credentials are verified
    * @error: set to a #GError in case of error
    *
@@ -395,14 +398,16 @@ twitter_client_class_init (TwitterClientClass *klass)
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (TwitterClientClass, user_verified),
                   NULL, NULL,
-                  _twitter_marshal_VOID__BOOLEAN_POINTER,
-                  G_TYPE_NONE, 2,
+                  _twitter_marshal_VOID__ULONG_BOOLEAN_POINTER,
+                  G_TYPE_NONE, 3,
+                  G_TYPE_ULONG,
                   G_TYPE_BOOLEAN,
                   G_TYPE_POINTER);
 
   /**
    * TwitterClient::user-received:
    * @client: the #TwitterClient that emitted the signal
+   * @handle: the handle of the request
    * @user: a #TwitterUser
    * @error: set to a #GError in case of error
    *
@@ -418,14 +423,16 @@ twitter_client_class_init (TwitterClientClass *klass)
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (TwitterClientClass, user_received),
                   NULL, NULL,
-                  _twitter_marshal_VOID__OBJECT_POINTER,
-                  G_TYPE_NONE, 2,
+                  _twitter_marshal_VOID__ULONG_OBJECT_POINTER,
+                  G_TYPE_NONE, 3,
+                  G_TYPE_ULONG,
                   TWITTER_TYPE_USER,
                   G_TYPE_POINTER);
 
   /**
    * TwitterClient::status-received:
    * @client: the #TwitterClient that emitted the signal
+   * @handle: the handle of the request
    * @user: a #TwitterStatus
    * @error: set to a #GError in case of error
    *
@@ -441,8 +448,9 @@ twitter_client_class_init (TwitterClientClass *klass)
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (TwitterClientClass, status_received),
                   NULL, NULL,
-                  _twitter_marshal_VOID__OBJECT_POINTER,
-                  G_TYPE_NONE, 2,
+                  _twitter_marshal_VOID__ULONG_OBJECT_POINTER,
+                  G_TYPE_NONE, 3,
+                  G_TYPE_ULONG,
                   TWITTER_TYPE_STATUS,
                   G_TYPE_POINTER);
 
@@ -471,6 +479,8 @@ twitter_client_init (TwitterClient *client)
   client->priv = priv = TWITTER_CLIENT_GET_PRIVATE (client);
 
   priv->auth_id = 0;
+
+  priv->last_handle_id = 1;
 
   priv->provider = TWITTER_DEFAULT_PROVIDER;
 }
@@ -532,6 +542,7 @@ typedef struct {
   ClientAction action;
   TwitterClient *client;
   guint requires_auth : 1;
+  gulong handle;
 } ClientClosure;
 
 #define closure_set_action(c,v)         (((ClientClosure *) (c))->action) = (v)
@@ -540,6 +551,8 @@ typedef struct {
 #define closure_get_client(c)           (((ClientClosure *) (c))->client)
 #define closure_set_requires_auth(c,v)  (((ClientClosure *) (c))->requires_auth) = (v)
 #define closure_get_requires_auth(c)    (((ClientClosure *) (c))->requires_auth)
+#define closure_set_handle(c,v)         (((ClientClosure *) (c))->handle) = (v)
+#define closure_get_handle(c)           (((ClientClosure *) (c))->handle)
 
 #ifdef TWEET_ENABLE_DEBUG
 #define closure_get_action_name(c)      (action_names[(((ClientClosure *) (c))->action)])
@@ -611,7 +624,7 @@ twitter_client_auth (SoupSession *session,
     }
 }
 
-static void
+static gulong
 twitter_client_queue_message (TwitterClient       *client,
                               SoupMessage         *msg,
                               gboolean             requires_auth,
@@ -619,6 +632,7 @@ twitter_client_queue_message (TwitterClient       *client,
                               gpointer             data)
 {
   TwitterClientPrivate *priv = client->priv;
+  gulong retval;
 
   if (requires_auth && !priv->auth_id)
     priv->auth_id = g_signal_connect (priv->session_async, "authenticate",
@@ -628,6 +642,16 @@ twitter_client_queue_message (TwitterClient       *client,
   soup_session_queue_message (priv->session_async, msg,
                               callback,
                               data);
+
+  /* the handle used for the closure, if any, must be the last_handle_id
+   * value; thus we return the same value, but we also bump up the handle
+   * by one for the next queued message
+   */
+  retval = priv->last_handle_id;
+
+  priv->last_handle_id += 1;
+
+  return retval;
 }
 
 /**
@@ -716,6 +740,7 @@ twitter_client_get_user (TwitterClient  *client,
 typedef struct {
   TwitterClient *client;
   TwitterUserList *user_list;
+  gulong handle;
   guint n_users;
   guint current_user;
 } EmitUserClosure;
@@ -732,7 +757,7 @@ do_emit_user_received (gpointer data)
     return FALSE;
 
   g_signal_emit (closure->client, client_signals[USER_RECEIVED], 0,
-                 user, NULL);
+                 closure->handle, user, NULL);
 
   closure->current_user += 1;
 
@@ -755,7 +780,8 @@ cleanup_emit_user_received (gpointer data)
 
 static void
 emit_user_received (TwitterClient   *client,
-                    TwitterUserList *user_list)
+                    TwitterUserList *user_list,
+                    gulong           handle)
 {
   EmitUserClosure *closure;
   guint count;
@@ -765,6 +791,7 @@ emit_user_received (TwitterClient   *client,
   closure = g_new (EmitUserClosure, 1);
   closure->client = g_object_ref (client);
   closure->user_list = g_object_ref (user_list);
+  closure->handle = handle;
   closure->n_users = count;
   closure->current_user = 0;
 
@@ -781,6 +808,7 @@ get_status_cb (SoupSession *session,
 {
   GetStatusClosure *closure = user_data;
   gboolean requires_auth = closure_get_requires_auth (closure);
+  gulong handle = closure_get_handle (closure);
   TwitterClient *client = closure_get_client (closure);
   TwitterClientPrivate *priv = client->priv;
 
@@ -804,7 +832,7 @@ get_status_cb (SoupSession *session,
                    msg->reason_phrase);
 
       g_signal_emit (client, client_signals[STATUS_RECEIVED], 0,
-                     closure->status, error);
+                     handle, closure->status, error);
 
       g_error_free (error);
     }
@@ -832,7 +860,7 @@ get_status_cb (SoupSession *session,
         twitter_status_load_from_data (closure->status, buffer, &error);
 
       g_signal_emit (client, client_signals[STATUS_RECEIVED], 0,
-                     closure->status, error);
+                     handle, closure->status, error);
 
       if (error)
         g_error_free (error);
@@ -853,6 +881,7 @@ verify_cb (SoupSession *session,
 {
   VerifyClosure *closure = user_data;
   TwitterClient *client = closure_get_client (closure);
+  gulong handle = closure_get_handle (closure);
 
   if (!SOUP_STATUS_IS_SUCCESSFUL (msg->status_code))
     {
@@ -864,7 +893,7 @@ verify_cb (SoupSession *session,
                    msg->reason_phrase);
 
       g_signal_emit (client, client_signals[USER_VERIFIED], 0,
-                     FALSE, error);
+                     handle, FALSE, error);
 
       g_error_free (error);
     }
@@ -875,7 +904,7 @@ verify_cb (SoupSession *session,
       is_verified = (msg->status_code == 200);
 
       g_signal_emit (client, client_signals[USER_VERIFIED], 0,
-                     is_verified, NULL);
+                     handle, is_verified, NULL);
     }
 
   g_object_unref (client);
@@ -883,13 +912,13 @@ verify_cb (SoupSession *session,
   g_free (closure);
 }
 
-void
+gulong
 twitter_client_verify_user (TwitterClient *client)
 {
   VerifyClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
 
   msg = twitter_api_verify_credentials (client->priv->base_url);
 
@@ -897,10 +926,11 @@ twitter_client_verify_user (TwitterClient *client)
   closure_set_action (clos, VERIFY_CREDENTIALS);
   closure_set_client (clos, g_object_ref (client));
   closure_set_requires_auth (clos, TRUE);
+  closure_set_handle (clos, client->priv->last_handle_id);
 
-  twitter_client_queue_message (client, msg, TRUE,
-                                verify_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, TRUE,
+                                       verify_cb,
+                                       clos);
 }
 
 static void
@@ -930,6 +960,7 @@ twitter_client_end_session (TwitterClient *client)
 typedef struct {
   TwitterClient *client;
   TwitterTimeline *timeline;
+  gulong handle;
   guint n_status;
   guint current_status;
 } EmitStatusClosure;
@@ -946,7 +977,7 @@ do_emit_status_received (gpointer data)
     return FALSE;
 
   g_signal_emit (closure->client, client_signals[STATUS_RECEIVED], 0,
-                 status, NULL);
+                 closure->handle, status, NULL);
 
   closure->current_status += 1;
 
@@ -972,7 +1003,8 @@ cleanup_emit_status_received (gpointer data)
 
 static void
 emit_status_received (TwitterClient   *client,
-                      TwitterTimeline *timeline)
+                      TwitterTimeline *timeline,
+                      gulong           handle)
 {
   EmitStatusClosure *closure;
   guint count;
@@ -982,6 +1014,7 @@ emit_status_received (TwitterClient   *client,
   closure = g_new (EmitStatusClosure, 1);
   closure->client = g_object_ref (client);
   closure->timeline = g_object_ref (timeline);
+  closure->handle = handle;
   closure->n_status = count;
   closure->current_status = 0;
 
@@ -998,6 +1031,7 @@ get_timeline_cb (SoupSession *session,
 {
   GetTimelineClosure *closure = user_data;
   gboolean requires_auth = closure_get_requires_auth (closure);
+  gulong handle = closure_get_handle (closure);
   TwitterClient *client = closure_get_client (closure);
   TwitterClientPrivate *priv = client->priv;
 
@@ -1021,7 +1055,7 @@ get_timeline_cb (SoupSession *session,
                    msg->reason_phrase);
 
       g_signal_emit (client, client_signals[STATUS_RECEIVED], 0,
-                     NULL, error);
+                     handle, NULL, error);
 
       g_error_free (error);
     }
@@ -1049,12 +1083,12 @@ get_timeline_cb (SoupSession *session,
       if (error)
         {
           g_signal_emit (client, client_signals[STATUS_RECEIVED], 0,
-                         NULL, error);
+                         handle, NULL, error);
 
           g_error_free (error);
         }
       else
-        emit_status_received (client, closure->timeline);
+        emit_status_received (client, closure->timeline, handle);
 
       g_free (buffer);
     }
@@ -1065,14 +1099,14 @@ get_timeline_cb (SoupSession *session,
   g_free (closure);
 }
 
-void
+gulong
 twitter_client_get_public_timeline (TwitterClient *client,
                                     guint          since_id)
 {
   GetTimelineClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
 
   msg = twitter_api_public_timeline (client->priv->base_url, since_id);
 
@@ -1080,14 +1114,15 @@ twitter_client_get_public_timeline (TwitterClient *client,
   closure_set_action (clos, PUBLIC_TIMELINE);
   closure_set_client (clos, g_object_ref (client));
   closure_set_requires_auth (clos, FALSE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->timeline = twitter_timeline_new ();
 
-  twitter_client_queue_message (client, msg, FALSE,
-                                get_timeline_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, FALSE,
+                                       get_timeline_cb,
+                                       clos);
 }
 
-void
+gulong
 twitter_client_get_friends_timeline (TwitterClient *client,
                                      const gchar   *friend_,
                                      gint64         since_date)
@@ -1095,7 +1130,7 @@ twitter_client_get_friends_timeline (TwitterClient *client,
   GetTimelineClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
 
   msg = twitter_api_friends_timeline (client->priv->base_url, friend_, since_date);
 
@@ -1103,14 +1138,15 @@ twitter_client_get_friends_timeline (TwitterClient *client,
   closure_set_action (clos, FRIENDS_TIMELINE);
   closure_set_client (clos, g_object_ref (client));
   closure_set_requires_auth (clos, TRUE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->timeline = twitter_timeline_new ();
 
-  twitter_client_queue_message (client, msg, TRUE,
-                                get_timeline_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, TRUE,
+                                       get_timeline_cb,
+                                       clos);
 }
 
-void
+gulong
 twitter_client_get_user_timeline (TwitterClient *client,
                                   const gchar   *user,
                                   guint          count,
@@ -1119,7 +1155,7 @@ twitter_client_get_user_timeline (TwitterClient *client,
   GetTimelineClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
 
   msg = twitter_api_user_timeline (client->priv->base_url, user, count, since_date);
 
@@ -1127,20 +1163,21 @@ twitter_client_get_user_timeline (TwitterClient *client,
   closure_set_action (clos, USER_TIMELINE);
   closure_set_client (clos, g_object_ref (client));
   closure_set_requires_auth (clos, TRUE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->timeline = twitter_timeline_new ();
 
-  twitter_client_queue_message (client, msg, TRUE,
-                                get_timeline_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, TRUE,
+                                       get_timeline_cb,
+                                       clos);
 }
 
-void
+gulong
 twitter_client_get_replies (TwitterClient *client)
 {
   GetTimelineClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
 
   msg = twitter_api_replies (client->priv->base_url);
 
@@ -1148,14 +1185,15 @@ twitter_client_get_replies (TwitterClient *client)
   closure_set_action (clos, STATUS_REPLIES);
   closure_set_client (clos, g_object_ref (client));
   closure_set_requires_auth (clos, TRUE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->timeline = twitter_timeline_new ();
 
-  twitter_client_queue_message (client, msg, TRUE,
-                                get_timeline_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, TRUE,
+                                       get_timeline_cb,
+                                       clos);
 }
 
-void
+gulong
 twitter_client_get_favorites (TwitterClient *client,
                               const gchar   *user,
                               gint           page)
@@ -1163,7 +1201,7 @@ twitter_client_get_favorites (TwitterClient *client,
   GetTimelineClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
 
   msg = twitter_api_favorites (client->priv->base_url, user, page);
 
@@ -1171,21 +1209,22 @@ twitter_client_get_favorites (TwitterClient *client,
   closure_set_action (clos, FAVORITES);
   closure_set_client (clos, g_object_ref (client));
   closure_set_requires_auth (clos, TRUE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->timeline = twitter_timeline_new ();
 
-  twitter_client_queue_message (client, msg, TRUE,
-                                get_timeline_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, TRUE,
+                                       get_timeline_cb,
+                                       clos);
 }
 
-void
+gulong
 twitter_client_get_archive (TwitterClient *client,
                             gint           page)
 {
   GetTimelineClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
 
   msg = twitter_api_archive (client->priv->base_url, page);
 
@@ -1193,11 +1232,12 @@ twitter_client_get_archive (TwitterClient *client,
   closure_set_action (clos, ARCHIVE);
   closure_set_client (clos, g_object_ref (client));
   closure_set_requires_auth (clos, TRUE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->timeline = twitter_timeline_new ();
 
-  twitter_client_queue_message (client, msg, TRUE,
-                                get_timeline_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, TRUE,
+                                       get_timeline_cb,
+                                       clos);
 }
 
 static void
@@ -1207,6 +1247,7 @@ get_user_cb (SoupSession *session,
 {
   GetUserClosure *closure = user_data;
   gboolean requires_auth = closure_get_requires_auth (closure);
+  gulong handle = closure_get_handle (closure);
   TwitterClient *client = closure_get_client (closure);
   TwitterClientPrivate *priv = client->priv;
 
@@ -1230,7 +1271,7 @@ get_user_cb (SoupSession *session,
                    msg->reason_phrase);
 
       g_signal_emit (client, client_signals[USER_RECEIVED], 0,
-                     NULL, error);
+                     handle, NULL, error);
 
       g_error_free (error);
     }
@@ -1259,7 +1300,7 @@ get_user_cb (SoupSession *session,
           twitter_user_load_from_data (closure->user, buffer, &error);
 
           g_signal_emit (client, client_signals[USER_RECEIVED], 0,
-                         closure->user, error);
+                         handle, closure->user, error);
 
           if (error)
             g_error_free (error);
@@ -1274,15 +1315,15 @@ get_user_cb (SoupSession *session,
   g_free (closure);
 }
 
-void
+gulong
 twitter_client_get_status (TwitterClient *client,
                            guint          status_id)
 {
   GetStatusClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
-  g_return_if_fail (status_id > 0);
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
+  g_return_val_if_fail (status_id > 0, 0);
 
   msg = twitter_api_status_show (client->priv->base_url, status_id);
 
@@ -1290,22 +1331,23 @@ twitter_client_get_status (TwitterClient *client,
   closure_set_action (clos, STATUS_SHOW);
   closure_set_client (clos, g_object_ref (client));
   closure_set_requires_auth (clos, FALSE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->status = twitter_status_new ();
 
-  twitter_client_queue_message (client, msg, FALSE,
-                                get_status_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, FALSE,
+                                       get_status_cb,
+                                       clos);
 }
 
-void
+gulong
 twitter_client_add_status (TwitterClient *client,
                            const gchar   *text)
 {
   GetStatusClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
-  g_return_if_fail (text != NULL);
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
+  g_return_val_if_fail (text != NULL, 0);
 
   msg = twitter_api_update (client->priv->base_url, text);
 
@@ -1313,22 +1355,23 @@ twitter_client_add_status (TwitterClient *client,
   closure_set_action (clos, STATUS_UPDATE);
   closure_set_client (clos, g_object_ref (client));
   closure_set_requires_auth (clos, TRUE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->status = twitter_status_new ();
 
-  twitter_client_queue_message (client, msg, TRUE,
-                                get_status_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, TRUE,
+                                       get_status_cb,
+                                       clos);
 }
 
-void
+gulong
 twitter_client_remove_status (TwitterClient *client,
                               guint          status_id)
 {
   GetStatusClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
-  g_return_if_fail (status_id > 0);
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
+  g_return_val_if_fail (status_id > 0, 0);
 
   msg = twitter_api_destroy (client->priv->base_url, status_id);
 
@@ -1336,11 +1379,12 @@ twitter_client_remove_status (TwitterClient *client,
   closure_set_action (clos, STATUS_DESTROY);
   closure_set_client (clos, g_object_ref (client));
   closure_set_requires_auth (clos, TRUE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->status = twitter_status_new ();
 
-  twitter_client_queue_message (client, msg, TRUE,
-                                get_status_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, TRUE,
+                                       get_status_cb,
+                                       clos);
 }
 
 static void
@@ -1350,6 +1394,7 @@ get_user_list_cb (SoupSession *session,
 {
   GetUserListClosure *closure = user_data;
   gboolean requires_auth = closure_get_requires_auth (closure);
+  gulong handle = closure_get_handle (closure);
   TwitterClient *client = closure_get_client (closure);
   TwitterClientPrivate *priv = client->priv;
 
@@ -1373,7 +1418,7 @@ get_user_list_cb (SoupSession *session,
                    msg->reason_phrase);
 
       g_signal_emit (client, client_signals[USER_RECEIVED], 0,
-                     NULL, error);
+                     handle, NULL, error);
 
       g_error_free (error);
     }
@@ -1401,12 +1446,12 @@ get_user_list_cb (SoupSession *session,
       if (error)
         {
           g_signal_emit (client, client_signals[USER_RECEIVED], 0,
-                         NULL, error);
+                         handle, NULL, error);
 
           g_error_free (error);
         }
       else
-        emit_user_received (client, closure->user_list);
+        emit_user_received (client, closure->user_list, handle);
 
       g_free (buffer);
     }
@@ -1417,15 +1462,15 @@ get_user_list_cb (SoupSession *session,
   g_free (closure);
 }
 
-void
+gulong
 twitter_client_add_friend (TwitterClient *client,
                            const gchar   *user)
 {
   GetUserClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
-  g_return_if_fail (user != NULL);
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
+  g_return_val_if_fail (user != NULL, 0);
 
   msg = twitter_api_create_friend (client->priv->base_url, user);
 
@@ -1433,22 +1478,23 @@ twitter_client_add_friend (TwitterClient *client,
   closure_set_action (clos, FRIEND_CREATE);
   closure_set_client (clos, g_object_ref (client));
   closure_set_requires_auth (clos, TRUE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->user = twitter_user_new ();
 
-  twitter_client_queue_message (client, msg, TRUE,
-                                get_user_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, TRUE,
+                                       get_user_cb,
+                                       clos);
 }
 
-void
+gulong
 twitter_client_remove_friend (TwitterClient *client,
                               const gchar   *user)
 {
   GetUserClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
-  g_return_if_fail (user != NULL);
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
+  g_return_val_if_fail (user != NULL, 0);
 
   msg = twitter_api_destroy_friend (client->priv->base_url, user);
 
@@ -1456,22 +1502,23 @@ twitter_client_remove_friend (TwitterClient *client,
   closure_set_action (clos, FRIEND_DESTROY);
   closure_set_client (clos, g_object_ref (client));
   closure_set_requires_auth (clos, TRUE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->user = twitter_user_new ();
 
-  twitter_client_queue_message (client, msg, TRUE,
-                                get_user_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, TRUE,
+                                       get_user_cb,
+                                       clos);
 }
 
-void
+gulong
 twitter_client_follow_user (TwitterClient *client,
                             const gchar   *user)
 {
   GetUserClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
-  g_return_if_fail (user != NULL);
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
+  g_return_val_if_fail (user != NULL, 0);
 
   msg = twitter_api_follow (client->priv->base_url, user);
 
@@ -1479,22 +1526,23 @@ twitter_client_follow_user (TwitterClient *client,
   closure_set_action (clos, NOTIFICATION_FOLLOW);
   closure_set_client (clos, g_object_ref (client));
   closure_set_requires_auth (clos, TRUE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->user = twitter_user_new ();
 
-  twitter_client_queue_message (client, msg, TRUE,
-                                get_user_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, TRUE,
+                                       get_user_cb,
+                                       clos);
 }
 
-void
+gulong
 twitter_client_leave_user (TwitterClient  *client,
                            const gchar    *user)
 {
   GetUserClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
-  g_return_if_fail (user != NULL);
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
+  g_return_val_if_fail (user != NULL, 0);
 
   msg = twitter_api_leave (client->priv->base_url, user);
 
@@ -1502,22 +1550,23 @@ twitter_client_leave_user (TwitterClient  *client,
   closure_set_action (clos, NOTIFICATION_LEAVE);
   closure_set_client (clos, g_object_ref (client));
   closure_set_requires_auth (clos, TRUE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->user = twitter_user_new ();
 
-  twitter_client_queue_message (client, msg, TRUE,
-                                get_user_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, TRUE,
+                                       get_user_cb,
+                                       clos);
 }
 
-void
+gulong
 twitter_client_add_favorite (TwitterClient  *client,
                              guint           status_id)
 {
   GetStatusClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
-  g_return_if_fail (status_id > 0);
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
+  g_return_val_if_fail (status_id > 0, 0);
 
   msg = twitter_api_create_favorite (client->priv->base_url, status_id);
 
@@ -1525,37 +1574,39 @@ twitter_client_add_favorite (TwitterClient  *client,
   closure_set_action (clos, FAVORITE_CREATE);
   closure_set_client (clos, g_object_ref (client));
   closure_set_requires_auth (clos, TRUE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->status = twitter_status_new ();
 
-  twitter_client_queue_message (client, msg, TRUE,
-                                get_status_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, TRUE,
+                                       get_status_cb,
+                                       clos);
 }
 
-void
+gulong
 twitter_client_remove_favorite (TwitterClient  *client,
                                 guint           status_id)
 {
   GetStatusClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
-  g_return_if_fail (status_id > 0);
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
+  g_return_val_if_fail (status_id > 0, 0);
 
   msg = twitter_api_destroy_favorite (client->priv->base_url, status_id);
 
   clos = g_new0 (GetStatusClosure, 1);
   closure_set_action (clos, FAVORITE_DESTROY);
   closure_set_client (clos, g_object_ref (client));
-  closure_set_requires_auth (close, TRUE);
+  closure_set_requires_auth (clos, TRUE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->status = twitter_status_new ();
 
-  twitter_client_queue_message (client, msg, TRUE,
-                                get_status_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, TRUE,
+                                       get_status_cb,
+                                       clos);
 }
 
-void
+gulong
 twitter_client_get_friends (TwitterClient *client,
                             const gchar   *user,
                             gint           page,
@@ -1564,22 +1615,23 @@ twitter_client_get_friends (TwitterClient *client,
   GetUserListClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
 
   msg = twitter_api_friends (client->priv->base_url, user, page, omit_status);
 
   clos = g_new0 (GetUserListClosure, 1);
   closure_set_action (clos, FRIENDS);
   closure_set_client (clos, g_object_ref (client));
-  closure_set_requires_auth (close, TRUE);
+  closure_set_requires_auth (clos, TRUE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->user_list = twitter_user_list_new ();
 
-  twitter_client_queue_message (client, msg, TRUE,
-                                get_user_list_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, TRUE,
+                                       get_user_list_cb,
+                                       clos);
 }
 
-void
+gulong
 twitter_client_get_followers (TwitterClient *client,
                               gint           page,
                               gboolean       omit_status)
@@ -1587,53 +1639,55 @@ twitter_client_get_followers (TwitterClient *client,
   GetUserListClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
 
   msg = twitter_api_followers (client->priv->base_url, page, omit_status);
 
   clos = g_new0 (GetUserListClosure, 1);
   closure_set_action (clos, FOLLOWERS);
   closure_set_client (clos, g_object_ref (client));
-  closure_set_requires_auth (close, TRUE);
+  closure_set_requires_auth (clos, TRUE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->user_list = twitter_user_list_new ();
 
-  twitter_client_queue_message (client, msg, TRUE,
-                                get_user_list_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, TRUE,
+                                       get_user_list_cb,
+                                       clos);
 }
 
-void
+gulong
 twitter_client_show_user_from_email (TwitterClient *client,
-                                     const gchar   *email)
+                                     const gchar   *email_or_screen_name)
 {
   GetUserClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
-  g_return_if_fail (email != NULL);
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
+  g_return_val_if_fail (email_or_screen_name != NULL, 0);
 
-  msg = twitter_api_user_show (client->priv->base_url, NULL, email);
+  msg = twitter_api_user_show (client->priv->base_url, NULL, email_or_screen_name);
 
   clos = g_new0 (GetUserClosure, 1);
   closure_set_action (clos, USER_SHOW);
   closure_set_client (clos, g_object_ref (client));
   closure_set_requires_auth (clos, TRUE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->user = twitter_user_new ();
 
-  twitter_client_queue_message (client, msg, TRUE,
-                                get_user_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, TRUE,
+                                       get_user_cb,
+                                       clos);
 }
 
-void
+gulong
 twitter_client_show_user_from_id (TwitterClient *client,
                                   const gchar   *user)
 {
   GetUserClosure *clos;
   SoupMessage *msg;
 
-  g_return_if_fail (TWITTER_IS_CLIENT (client));
-  g_return_if_fail (user != NULL);
+  g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
+  g_return_val_if_fail (user != NULL, 0);
 
   msg = twitter_api_user_show (client->priv->base_url, user, NULL);
 
@@ -1641,11 +1695,12 @@ twitter_client_show_user_from_id (TwitterClient *client,
   closure_set_action (clos, USER_SHOW);
   closure_set_client (clos, g_object_ref (client));
   closure_set_requires_auth (clos, FALSE);
+  closure_set_handle (clos, client->priv->last_handle_id);
   clos->user = twitter_user_new ();
 
-  twitter_client_queue_message (client, msg, TRUE,
-                                get_user_cb,
-                                clos);
+  return twitter_client_queue_message (client, msg, TRUE,
+                                       get_user_cb,
+                                       clos);
 }
 
 TwitterProvider
