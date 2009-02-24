@@ -689,6 +689,17 @@ twitter_client_new (void)
   return g_object_new (TWITTER_TYPE_CLIENT, NULL);
 }
 
+/**
+ * twitter_client_new_for_user:
+ * @email: the email address of the user
+ * @password: the password of the user
+ *
+ * Creates a new #TwitterClient using the default provider, and
+ * sets the credentials of the user.
+ *
+ * Return value: the newly created #TwitterClient. Use g_object_unref()
+ *   to free the allocated resources
+ */
 TwitterClient *
 twitter_client_new_for_user (const gchar *email,
                              const gchar *password)
@@ -699,6 +710,20 @@ twitter_client_new_for_user (const gchar *email,
                        NULL);
 }
 
+/**
+ * twitter_client_new_ful:
+ * @provider: the provider logical id
+ * @base_url: the base URL of the provider, or %NULL if @provider
+ *    is not %TWITTER_CUSTOM_PROVIDER
+ * @email: the email address of the user
+ * @password: the password of the user
+ *
+ * Creates a new #TwitterClient using the given @provider, and
+ * sets the credentials of the user.
+ *
+ * Return value: the newly created #TwitterClient. Use g_object_unref()
+ *   to free the allocated resources
+ */
 TwitterClient *
 twitter_client_new_full (TwitterProvider  provider,
                          const gchar     *base_url,
@@ -716,6 +741,16 @@ twitter_client_new_full (TwitterProvider  provider,
                        NULL);
 }
 
+/**
+ * twitter_client_set_user:
+ * @client: a #TwitterClient
+ * @email: the email address of the user
+ * @password: the password of the user
+ *
+ * Sets the user credentials of the user. The [ @email, @password ] tuple
+ * will be used to authenticate the @client whenever a request requiring
+ * authentication is queued.
+ */
 void
 twitter_client_set_user (TwitterClient *client,
                          const gchar   *email,
@@ -741,6 +776,17 @@ twitter_client_set_user (TwitterClient *client,
   g_object_notify (G_OBJECT (client), "password");
 }
 
+/**
+ * twitter_client_get_user
+ * @client: a #TwitterClient#
+ * @email: return location for the email address, or %NULL
+ * @password: return location for the password, or %NULL
+ *
+ * Retrieves the user credentials.
+ *
+ * The returned strings are newly allocated and should be freed
+ * using g_free() when done using them.
+ */
 void
 twitter_client_get_user (TwitterClient  *client,
                          gchar         **email,
@@ -750,6 +796,7 @@ twitter_client_get_user (TwitterClient  *client,
 
   if (email)
     *email = g_strdup (client->priv->email);
+
   if (password)
     *password = g_strdup (client->priv->password);
 }
@@ -929,6 +976,18 @@ verify_cb (SoupSession *session,
   g_free (closure);
 }
 
+/**
+ * twitter_client_verify_user:
+ * @client: a #TwitterClient
+ *
+ * Requests a verification of the user credentials used by @client
+ * to the provider.
+ *
+ * The #TwitterClient::user-verified signal will be emitted with
+ * the results of the request.
+ *
+ * Return value: the handle of the request, or 0
+ */
 gulong
 twitter_client_verify_user (TwitterClient *client)
 {
@@ -962,6 +1021,16 @@ end_session_cb (SoupSession *session,
   g_signal_emit (client, client_signals[SESSION_ENDED], 0);
 }
 
+/**
+ * twitter_client_end_session:
+ * @client: a #TwitterClient
+ *
+ * Ends the current session of @client. The authentication state
+ * will be reset.
+ *
+ * The #TwitterClient::session-ended signal will be emitted when the
+ * provider acknowledged the request.
+ */
 void
 twitter_client_end_session (TwitterClient *client)
 {
@@ -1358,6 +1427,19 @@ twitter_client_get_status (TwitterClient *client,
                                        clos);
 }
 
+/**
+ * twitter_client_add_status:
+ * @client: a #TwitterClient
+ * @text: the text of the status message
+ *
+ * Adds @text to the status messages of the user currently
+ * authenticated by @client.
+ *
+ * The #TwitterClient::status-received signal will be emitted
+ * with the #TwitterStatus for @text.
+ *
+ * Return value: the handle of the request, or 0
+ */
 gulong
 twitter_client_add_status (TwitterClient *client,
                            const gchar   *text)
@@ -1625,6 +1707,23 @@ twitter_client_remove_favorite (TwitterClient  *client,
                                        clos);
 }
 
+/**
+ * twitter_client_get_friends:
+ * @client: a #TwitterClient
+ * @user: the user id or screen name
+ * @page: the page number of the friends list
+ * @omit_status: %TRUE if the #TwitterUser should not have
+ *   the last status associated to them
+ *
+ * Requests the provider used by @client for a (paged) list
+ * of the people followed by the #TwitterClient authenticated
+ * user.
+ *
+ * The #TwitterClient::user-received signal will be emitted
+ * for each followed user.
+ *
+ * Return value: the handle of the request, or 0
+ */
 gulong
 twitter_client_get_friends (TwitterClient *client,
                             const gchar   *user,
@@ -1650,6 +1749,22 @@ twitter_client_get_friends (TwitterClient *client,
                                        clos);
 }
 
+/**
+ * twitter_client_get_followers:
+ * @client: a #TwitterClient
+ * @page: the page number of the followers list
+ * @omit_status: %TRUE if the #TwitterUser should not have
+ *   the last status associated to them
+ *
+ * Requests the provider used by @client for a (paged) list
+ * of the people following the #TwitterClient authenticated
+ * user.
+ *
+ * The #TwitterClient::user-received signal will be emitted
+ * for each follower.
+ *
+ * Return value: the handle of the request, or 0
+ */
 gulong
 twitter_client_get_followers (TwitterClient *client,
                               gint           page,
@@ -1674,17 +1789,30 @@ twitter_client_get_followers (TwitterClient *client,
                                        clos);
 }
 
+/**
+ * twitter_client_show_user_from_email:
+ * @client: a #TwitterClient
+ * @email: E-mail address of the user
+ *
+ * Requests the provider used by @client to "show" the user
+ * matching the @email string.
+ *
+ * The #TwitterClient::user-received signal will be emitted
+ * with the requested #TwitterUser
+ *
+ * Return value: the handle of the request, or 0
+ */
 gulong
 twitter_client_show_user_from_email (TwitterClient *client,
-                                     const gchar   *email_or_screen_name)
+                                     const gchar   *email)
 {
   GetUserClosure *clos;
   SoupMessage *msg;
 
   g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
-  g_return_val_if_fail (email_or_screen_name != NULL, 0);
+  g_return_val_if_fail (email != NULL, 0);
 
-  msg = twitter_api_user_show (client->priv->base_url, NULL, email_or_screen_name);
+  msg = twitter_api_user_show (client->priv->base_url, NULL, email);
 
   clos = g_new0 (GetUserClosure, 1);
   closure_set_action (clos, USER_SHOW);
@@ -1698,17 +1826,34 @@ twitter_client_show_user_from_email (TwitterClient *client,
                                        clos);
 }
 
+/**
+ * twitter_client_show_user_from_id:
+ * @client: a #TwitterClient
+ * @id_or_screen_name: user ID or screen name
+ *
+ * Requests the provider used by @client to "show" the user
+ * matching the @user string.
+ *
+ * The @user string is either the user id as returned by
+ * twitter_user_get_id(), or the screen name as returned
+ * by twitter_user_get_screen_name().
+ *
+ * The #TwitterClient::user-received signal will be emitted
+ * with the requested #TwitterUser
+ *
+ * Return value: the handle of the request, or 0
+ */
 gulong
 twitter_client_show_user_from_id (TwitterClient *client,
-                                  const gchar   *user)
+                                  const gchar   *id_or_screen_name)
 {
   GetUserClosure *clos;
   SoupMessage *msg;
 
   g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
-  g_return_val_if_fail (user != NULL, 0);
+  g_return_val_if_fail (id_or_screen_name != NULL, 0);
 
-  msg = twitter_api_user_show (client->priv->base_url, user, NULL);
+  msg = twitter_api_user_show (client->priv->base_url, id_or_screen_name, NULL);
 
   clos = g_new0 (GetUserClosure, 1);
   closure_set_action (clos, USER_SHOW);
@@ -1722,6 +1867,14 @@ twitter_client_show_user_from_id (TwitterClient *client,
                                        clos);
 }
 
+/**
+ * twitter_client_get_provider:
+ * @client: a #TwitterClient
+ *
+ * Retrieves the type of provider used by @client
+ *
+ * Return value: the provider logical id
+ */
 TwitterProvider
 twitter_client_get_provider (TwitterClient *client)
 {
@@ -1730,6 +1883,15 @@ twitter_client_get_provider (TwitterClient *client)
   return client->priv->provider;
 }
 
+/**
+ * twitter_client_get_base_url:
+ * @client: a #TwitterClient
+ *
+ * Retrieves the base URL of the service provider used by @client
+ *
+ * Return value: the base URL. The returned string is owned by
+ *   the #TwitterClient and should never be modified of freed
+ */
 G_CONST_RETURN gchar *
 twitter_client_get_base_url (TwitterClient *client)
 {
