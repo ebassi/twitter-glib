@@ -123,6 +123,7 @@ enum
   USER_RECEIVED,
   TIMELINE_COMPLETE,
   USER_VERIFIED,
+  SESSION_ENDED,
 
   LAST_SIGNAL
 };
@@ -466,6 +467,22 @@ twitter_client_class_init (TwitterClientClass *klass)
                   G_TYPE_FROM_CLASS (gobject_class),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (TwitterClientClass, timeline_complete),
+                  NULL, NULL,
+                  _twitter_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
+
+  /**
+   * TwitterClient::session-ended:
+   * @client: the #TwitterClient that emitted the signal
+   *
+   * The ::session-ended signal is emitted at the end of the
+   * twitter_client_end_session() request
+   */
+  client_signals[SESSION_ENDED] =
+    g_signal_new (I_("session-ended"),
+                  G_TYPE_FROM_CLASS (gobject_class),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (TwitterClientClass, session_ended),
                   NULL, NULL,
                   _twitter_marshal_VOID__VOID,
                   G_TYPE_NONE, 0);
@@ -941,6 +958,8 @@ end_session_cb (SoupSession *session,
   TwitterClient *client = user_data;
 
   client->priv->auth_complete = FALSE;
+
+  g_signal_emit (client, client_signals[SESSION_ENDED], 0);
 }
 
 void

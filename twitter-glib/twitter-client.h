@@ -123,9 +123,7 @@ struct _TwitterClientClass
                                   gulong            handle,
                                   gboolean          is_verified,
                                   const GError     *error);
-  void     (* session_ended)     (TwitterClient    *client,
-                                  TwitterUser      *user,
-                                  const GError     *error);
+  void     (* session_ended)     (TwitterClient    *client);
 
   void     (* status_received)   (TwitterClient    *client,
                                   gulong            handle,
