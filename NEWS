@@ -1,3 +1,20 @@
+Twitter-GLib 0.9.6
+-------------------------------------------------------------------------------
+
+Emmanuele Bassi (9):
+      Post release bump to 0.9.5
+      [build] Depend on libsoup-gnome-2.4
+      [build] Conditionally depend on libsoup-gnome-2.4
+      [client] Include soup-gnome.h
+      [client] Use handles for each requests
+      [client] Add ::session-ended signal
+      [docs] Add documentation for the Client methods
+      [release] Update dependencies
+      [release] Bump to 0.9.6
+
+Ross Burton (1):
+      [client] Use libsoup-gnome proxy resolver
+
 Twitter-GLib 0.9.4
 -------------------------------------------------------------------------------
 
