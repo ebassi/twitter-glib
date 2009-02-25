@@ -19,7 +19,9 @@ Twitter-GLib depends on:
   - GLib >= 2.16
   - GIO >= 2.16
   - JSON-GLib >= 0.6
-  - libsoup >= 2.4.1
+  - libsoup-2.4 >= 2.4.1
+      - or -
+  - libsoup-gnome-2.4 >= 2.4.1
   - GdkPixbuf >= 2.0
 
 INSTALLATION
