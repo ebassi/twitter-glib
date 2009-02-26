@@ -3,9 +3,11 @@ exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${exec_prefix}/include
 
+libsouppkg=@libsoup_pkg_name@
+
 Name: Twitter-GLib
 Description: GObject wrapper for the Twitter web API
 Version: @VERSION@
 Libs: -L${libdir} -ltwitter-glib-1.0
 Cflags: -I${includedir}/twitter-glib-1.0
-Requires: gobject-2.0 gio-2.0 json-glib-1.0 @libsoup_pkg_name@ gdk-pixbuf-2.0
+Requires: gobject-2.0 gio-2.0 json-glib-1.0 ${libsouppkg} gdk-pixbuf-2.0
