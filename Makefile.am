@@ -1,10 +1,12 @@
-SUBDIRS = twitter-glib doc
+SUBDIRS = build twitter-glib doc
 
 if ENABLE_GLIB_TEST
 SUBDIRS += tests
 endif
 
-DIST_SUBDIRS = twitter-glib doc tests
+DIST_SUBDIRS = build twitter-glib doc tests
+
+ACLOCAL_AMFLAGS = -I build/autotools
 
 pcfiles = twitter-glib-$(TWITTER_API_VERSION).pc
 

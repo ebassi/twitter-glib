@@ -30,6 +30,7 @@ AC_INIT([twitter-glib],
         [],
         [twitter-glib])
 
+AC_CONFIG_MACRO_DIR([build/autotools])
 AC_CONFIG_SRCDIR([twitter-glib/twitter-glib.h])
 
 AM_INIT_AUTOMAKE([1.10])
@@ -137,10 +138,14 @@ fi
 
 AC_SUBST(TWITTER_MAINTAINER_CFLAGS)
 
+GOBJECT_INTROSPECTION_CHECK([0.6.3])
+
 GTK_DOC_CHECK([1.11])
 
 AC_CONFIG_FILES([
         Makefile
+        build/Makefile
+        build/autotools/Makefile
         twitter-glib/Makefile
         twitter-glib/twitter-version.h
         tests/Makefile
@@ -160,5 +165,6 @@ echo "               Debug level: ${enable_debug}"
 echo " Maintainer Compiler flags: ${enable_maintainer_flags}"
 echo "       Build API reference: ${enable_gtk_doc}"
 echo "         Enable test suite: ${enable_glibtest}"
+echo "  Build Introspection data: ${enable_introspection}"
 echo "        Libsoup dependency: ${libsoup_pkg_name}"
 echo ""

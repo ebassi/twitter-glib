@@ -1,9 +1,10 @@
+Makefile
+Makefile.in
 /ChangeLog
 /INSTALL
-/Makefile
-/Makefile.in
 /aclocal.m4
 /autom4te.cache/
+/build/autotools/gtk-doc.m4
 /compile
 /config.guess
 /config.h
@@ -13,11 +14,7 @@
 /config.sub
 /configure
 /depcomp
-/doc/Makefile
-/doc/Makefile.in
 /doc/reference/.libs
-/doc/reference/Makefile
-/doc/reference/Makefile.in
 /doc/reference/version.xml
 /doc/reference/html
 /doc/reference/xml
@@ -39,10 +36,10 @@
 /install-sh
 /libtool
 /ltmain.sh
+/mkinstalldirs
 /missing
+/po
 /stamp-h1
-/tests/Makefile
-/tests/Makefile.in
 /tests/.deps
 /tests/.libs
 /tests/twitter-test
@@ -53,8 +50,7 @@
 /twitter-glib.pc
 /twitter-glib/.deps
 /twitter-glib/.libs
-/twitter-glib/Makefile
-/twitter-glib/Makefile.in
+/twitter-glib/Twitter-1.0.*
 /twitter-glib/libtwitter-glib-1.0.la
 /twitter-glib/stamp-twitter-enum-types.h
 /twitter-glib/stamp-twitter-marshal.h
