@@ -1,5 +1,9 @@
 NULL =
 
+V         = @
+Q         = $(V:1=)
+QUIET_GEN = $(Q:@=@echo '  GEN   '$@;)
+
 MARSHALFILES = twitter-marshal.c twitter-marshal.h
 ENUMFILES = twitter-enum-types.c twitter-enum-types.h
 STAMPFILES = stamp-twitter-marshal.h stamp-twitter-enum-types.h
@@ -69,7 +73,7 @@ stamp-twitter-enum-types.h: $(sources_public_h) Makefile
 	  $(GLIB_MKENUMS) \
 		--template twitter-enum-types.h.in \
 	  $(sources_public_h) ) > xgen-ceth \
-	&& (cmp xgen-ceth twitter-enum-types.h || cp xgen-ceth twitter-enum-types.h) \
+	&& (cmp -s xgen-ceth twitter-enum-types.h || cp xgen-ceth twitter-enum-types.h) \
 	&& rm -f xgen-ceth \
 	&& echo timestamp > $(@F)
 
@@ -137,6 +141,7 @@ Twitter-@TWITTER_API_VERSION@.gir: $(INTROSPECTION_SCANNER) libtwitter-glib-@TWI
 		--include=Soup-2.4 \
 		--include=GdkPixbuf-2.0 \
 		--library=twitter-glib-@TWITTER_API_VERSION@ \
+		--libtool="$(top_builddir)/doltlibtool" \
 		--pkg gobject-2.0 \
 		--pkg libsoup-2.4 \
 		--pkg gdk-pixbuf-2.0 \
@@ -155,7 +160,7 @@ typelibsdir = $(libdir)/girepository-1.0/
 typelibs_DATA = $(BUILT_GIRSOURCES:.gir=.typelib)
 
 %.typelib: %.gir $(INTROSPECTION_COMPILER)
-	$(DEBUG) $(INTROSPECTION_COMPILER) \
+	$(QUIET_GEN)$(DEBUG) $(INTROSPECTION_COMPILER) \
 		--includedir=$(srcdir) \
 		--includedir=. \
 		$(INTROSPECTION_COMPILER_OPTS) \
