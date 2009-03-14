@@ -142,10 +142,14 @@ GOBJECT_INTROSPECTION_CHECK([0.6.3])
 
 GTK_DOC_CHECK([1.11])
 
+SHAVE_INIT([build/autotools], [enable])
+
 AC_CONFIG_FILES([
         Makefile
         build/Makefile
         build/autotools/Makefile
+        build/autotools/shave
+        build/autotools/shave-libtool
         twitter-glib/Makefile
         twitter-glib/twitter-version.h
         tests/Makefile

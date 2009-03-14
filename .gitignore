@@ -5,6 +5,8 @@ Makefile.in
 /aclocal.m4
 /autom4te.cache/
 /build/autotools/gtk-doc.m4
+/build/autotools/shave
+/build/autotools/shave-libtool
 /compile
 /config.guess
 /config.h
