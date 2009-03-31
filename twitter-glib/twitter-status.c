@@ -491,6 +491,14 @@ twitter_status_get_url (TwitterStatus *status)
   return status->priv->url;
 }
 
+/* The TwitterUser has been finalized, so self-destruct the status */
+static void
+user_weak_notify (gpointer data, GObject *dead_user)
+{
+  TwitterStatus *status = TWITTER_STATUS (data);
+  g_object_unref (status);
+}
+
 void
 _twitter_status_set_user (TwitterStatus *status,
                           TwitterUser   *user)
@@ -507,14 +515,14 @@ _twitter_status_set_user (TwitterStatus *status,
           g_signal_handler_disconnect (priv->user, priv->user_changed_id);
           priv->user_changed_id = 0;
         }
-
-      g_object_unref (priv->user);
+      g_object_weak_unref ((GObject*)priv->user, user_weak_notify, status);
       priv->user = NULL;
     }
 
   if (user)
     {
-      priv->user = g_object_ref_sink (user);
+      priv->user = user;
+      g_object_weak_ref ((GObject*)priv->user, user_weak_notify, status);
       priv->user_changed_id = g_signal_connect (priv->user, "changed",
                                                 G_CALLBACK (user_changed_cb),
                                                 status);
