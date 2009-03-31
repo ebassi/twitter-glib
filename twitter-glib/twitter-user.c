@@ -159,7 +159,7 @@ twitter_user_dispose (GObject *gobject)
       priv->async_session = NULL;
     }
 
-  G_OBJECT_CLASS (twitter_user_parent_class)->finalize (gobject);
+  G_OBJECT_CLASS (twitter_user_parent_class)->dispose (gobject);
 }
 
 static void
