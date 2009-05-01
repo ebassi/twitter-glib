@@ -36,8 +36,6 @@ AC_CONFIG_SRCDIR([twitter-glib/twitter-glib.h])
 AM_INIT_AUTOMAKE([1.10])
 AM_CONFIG_HEADER([config.h])
 
-AM_MAINTAINER_MODE
-
 AM_PROG_CC_C_O
 AM_PATH_GLIB_2_0
 
