@@ -24,14 +24,14 @@ sources_private_h = \
 	$(top_srcdir)/twitter-glib/twitter-private.h 	\
 	$(NULL)
 
-sources_c = 			\
-	twitter-api.c 		\
-	twitter-common.c 	\
-	twitter-client.c 	\
-	twitter-status.c 	\
-	twitter-timeline.c 	\
-	twitter-user.c 		\
-	twitter-user-list.c 	\
+sources_c = \
+	$(srcdir)/twitter-api.c 	\
+	$(srcdir)/twitter-common.c 	\
+	$(srcdir)/twitter-client.c 	\
+	$(srcdir)/twitter-status.c 	\
+	$(srcdir)/twitter-timeline.c 	\
+	$(srcdir)/twitter-user.c 	\
+	$(srcdir)/twitter-user-list.c 	\
 	$(NULL)
 
 INCLUDES = \
@@ -41,10 +41,9 @@ INCLUDES = \
 	-DG_LOG_DOMAIN=\"Twitter\"	\
 	-DG_DISABLE_DEPRECATED		\
 	-DTWITTER_COMPILATION		\
-	$(TWITTER_CFLAGS)		\
 	$(NULL)
 
-AM_CPPFLAGS = $(TWITTER_MAINTAINER_CFLAGS) $(TWITTER_DEBUG_CFLAGS)
+AM_CPPFLAGS = $(TWITTER_CFLAGS) $(TWITTER_MAINTAINER_CFLAGS) $(TWITTER_DEBUG_CFLAGS)
 
 twitter-marshal.h: stamp-twitter-marshal.h
 	@true
