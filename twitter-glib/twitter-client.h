@@ -170,7 +170,7 @@ void                  twitter_client_get_user             (TwitterClient   *clie
 gulong                twitter_client_verify_user          (TwitterClient   *client);
 void                  twitter_client_end_session          (TwitterClient   *client);
 gulong                twitter_client_show_user_from_id    (TwitterClient   *client,
-                                                           const gchar     *user);
+                                                           const gchar     *id_or_screen_name);
 gulong                twitter_client_show_user_from_email (TwitterClient   *client,
                                                            const gchar     *email);
 
