@@ -73,7 +73,7 @@ AC_PATH_PROG([GLIB_GENMARSHAL], [glib-genmarshal])
 AC_PATH_PROG([GLIB_MKENUMS], [glib-mkenums])
 AC_PATH_PROG([GTESTER], [gtester])
 AC_PATH_PROG([GTESTER_REPORT], [gtester-report])
-AC_CHECK_FUNCS([strptime localtime_r])
+AC_CHECK_FUNCS([strptime localtime_r gmtime_r])
 
 libsoup_pkg_name=""
 PKG_CHECK_EXISTS([libsoup-gnome-2.4],
