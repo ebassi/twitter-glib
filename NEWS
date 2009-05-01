@@ -1,3 +1,26 @@
+Twitter-GLib 0.9.8
+-------------------------------------------------------------------------------
+
+Emmanuele Bassi (14):
+      Post release bump to 0.9.7
+      [twitter-glib.pc] Add libsouppkg variable
+      Build GObject Introspection data
+      [build] Shave the build process
+      [build] Add dolt
+      [build] Simple build fixes
+      [build] Check for gmtime_r
+      Twitter returns timestamps in UTC
+      [build] Patch gtk-doc.make
+      [build] Remove DOLT files on distclean
+      [build] Remove AM_MAINTAINER_MODE
+      [build] Reference source files using srcdir
+      [build] Clean up configure.ac
+      Rework the Twitter time-to-timestamp conversion
+
+Ross Burton (2):
+      Fix TwitterUser's dispose chaining
+      TwitterStatus should take weak references on the TwitterUser
+
 Twitter-GLib 0.9.6
 -------------------------------------------------------------------------------
 
