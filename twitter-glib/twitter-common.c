@@ -175,13 +175,18 @@ twitter_http_date_to_delta (const gchar *date)
   return (now - res);
 }
 
+#ifndef HAVE_TIMEGM
+/* used by the fake timegm() implementation */
+static const gint days_before[] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+#endif
+
 /**
  * twitter_date_to_time_val:
  * @date: a timestamp coming from Twitter
  * @time_: return location for a #GTimeVal
  *
- * Converts a Twitter date into a #GTimeVal. The timestamp will
- * be adjusted to the system's timezone.
+ * Converts a Twitter date into a #GTimeVal. The timestamp is relative
+ * to UTC.
  *
  * Return value: %TRUE if the conversion was successful
  */
@@ -195,6 +200,9 @@ twitter_date_to_time_val (const gchar *date,
   g_return_val_if_fail (date != NULL, FALSE);
   g_return_val_if_fail (time_ != NULL, FALSE);
 
+  /* XXX - this code is here in case there's a sudden onset of sanity
+   * at Twitter and they switch to using any format supported by libsoup
+   */
   soup_date = soup_date_new_from_string (date);
   if (soup_date)
     {
@@ -219,43 +227,38 @@ twitter_date_to_time_val (const gchar *date,
      */
     strptime (date, "%a %b %d %T %z %Y", &tmp);
 
-    res = mktime (&tmp);
-    if (res != 0)
-      {
-        time_t now_t;
-        struct tm now_tm;
+#ifdef HAVE_TIMEGM
+    time_->tv_sec = timegm (&tmp);
+    time_->tv_usec = 0;
 
-        time (&now_t);
+    return TRUE;
+#else
+    {
+      res = 0;
 
-        /* the timestamp is returned in UTC, so we need to convert
-         * it into the user's current timezone; this is the system's
-         * time zone
-         *
-         * XXX - we should have a variant function that just returns
-         * the timestamp in UTC and a convenience method inside the
-         * TwitterUser object that adjusts it to the user timezone
-         */
-#ifdef HAVE_GMTIME_R
-        gmtime_r (&now_t, &now_tm);
-#else /* !HAVE_GMTIME_R */
+      if (tmp.tm_mon < 0 || tmp.tm_mon > 11)
         {
-          struct tm *now_tm_p = gmtime (&now_t);
+          time_->tv_sec = res;
+          time_->tv_usec = 0;
 
-          if (now_tm_p == NULL)
-            {
-              g_warning ("now_tm_p != NULL failed");
-              return FALSE;
-            }
-          else
-            memcpy (&now_tm, now_tm_p, sizeof (struct tm));
+          return FALSE;
         }
-#endif /* HAVE_GMTIME_R */
 
-        time_->tv_sec = res;
-        time_->tv_usec = 0;
+      res += (tmp.tm_year - 70) * 365;
+      res += (tmp.tm_year - 68) / 4;
+      res += days_before[tmp.tm_mon] + tmp.tm_mday - 1;
 
-        return TRUE;
-      }
+      if (tmp.tm_year % 4 == 0 && tmp.tm_mon < 2)
+        res -= 1;
+
+      res = ((((res * 24) + tmp.tm_hour) * 60) + tmp.tm_min) * 60 + tmp.tm_sec;
+
+      time_->tv_sec = res;
+      time_->tv_usec = 0;
+
+      return TRUE;
+    }
+#endif /* HAVE_TIMEGM */
   }
 #endif /* HAVE_STRPTIME */
 
