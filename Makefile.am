@@ -20,6 +20,8 @@ EXTRA_DIST = twitter-glib.pc.in
 
 CLEANFILES = $(pcfiles) test-report.xml
 
+DISTCLEANFILES = doltcompile doltlibtool
+
 DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc --enable-maintainer-flags
 
 dist-hook:
