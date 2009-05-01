@@ -13,11 +13,9 @@ m4_define([twitter_binary_age], [m4_eval(100 * twitter_minor + twitter_micro)])
 # increase each time the web api changes
 m4_define([twitter_web_api_age], [0])
 
-m4_define([lt_current],
-          [m4_eval(100 * twitter_minor + twitter_micro - twitter_interface_age)])
+m4_define([lt_current], [m4_eval(100 * twitter_minor + twitter_micro - twitter_interface_age)])
 m4_define([lt_revision], [twitter_interface_age])
-m4_define([lt_age],
-          [m4_eval(twitter_binary_age - twitter_interface_age)])
+m4_define([lt_age], [m4_eval(twitter_binary_age - twitter_interface_age)])
 
 m4_define([glib_req_version], [2.16])
 m4_define([json_glib_req_version], [0.6.0])
@@ -78,9 +76,11 @@ PKG_CHECK_EXISTS([libsoup-gnome-2.4],
                  [libsoup_pkg_name=libsoup-gnome-2.4],
                  [libsoup_pkg_name=libsoup-2.4])
 
-if test "x$libsoup_pkg_name" = "xlibsoup-gnome-2.4"; then
-  AC_DEFINE([HAVE_LIBSOUP_GNOME], [1], [Whether Twitter-GLib uses libsoup-gnome])
-fi
+AS_IF([test "x$libsoup_pkg_name" = "xlibsoup-gnome-2.4"],
+      [
+        AC_DEFINE([HAVE_LIBSOUP_GNOME], [1], [Whether Twitter-GLib uses libsoup-gnome])
+      ]
+)
 
 AC_SUBST([libsoup_pkg_name])
 
@@ -101,40 +101,50 @@ AM_CONDITIONAL(ENABLE_GLIB_TEST, test "x$enable_glibtest" = "xyes")
 
 dnl = Enable debug level ===================================================
 
-m4_define([debug_default],
-          m4_if(m4_eval(twitter_minor % 2), [1], [yes], [minimum]))
+m4_define([debug_default], [m4_if(m4_eval(twitter_minor % 2), [1], [yes], [minimum])])
 
 AC_ARG_ENABLE([debug],
-              AC_HELP_STRING([--enable-debug=@<:@no/minimum/yes@:>@],
-                             [turn on debugging @<:@default=debug_default@:>@]),
-,
-              enable_debug=debug_default)
+              [AC_HELP_STRING([--enable-debug=@<:@no/minimum/yes@:>@],
+                              [turn on debugging @<:@default=debug_default@:>@])],
+              [],
+              [enable_debug=debug_default])
 
-if test "x$enable_debug" = "xyes"; then
-  test "$cflags_set" = set || CFLAGS="$CFLAGS -g"
-  TWITTER_DEBUG_CFLAGS="-DTWITTER_ENABLE_DEBUG"
-else
-  if test "x$enable_debug" = "xno"; then
-    TWITTER_DEBUG_CFLAGS="-DG_DISABLE_ASSERT -DG_DISABLE_CHECKS -DG_DISABLE_CAST_CHECKS"
-  else # minimum
-    TWITTER_DEBUG_CFLAGS="-DTWITTER_ENABLE_DEBUG -DG_DISABLE_CAST_CHECKS"
-  fi
-fi
+AS_CASE([$enable_debug],
+
+        [yes],
+        [
+          test "$cflags_set" = set || CFLAGS="$CFLAGS -g"
+          TWITTER_DEBUG_CFLAGS="-DTWITTER_ENABLE_DEBUG"
+        ],
+
+        [minimum],
+        [
+          TWITTER_DEBUG_CFLAGS="-DTWITTER_ENABLE_DEBUG -DG_DISABLE_CAST_CHECKS"
+        ],
+
+        [no],
+        [
+          TWITTER_DEBUG_CFLAGS="-DG_DISABLE_ASSERT -DG_DISABLE_CHECKS -DG_DISABLE_CAST_CHECKS"
+        ],
+
+        [*], [AC_MSG_ERROR([Invalid value for --enable-debug])]
+)
 
 AC_SUBST(TWITTER_DEBUG_CFLAGS)
 
 dnl = Enable strict compiler flags =========================================
 
 # use strict compiler flags only on development releases
-m4_define([maintainer_flags_default], m4_if(m4_eval(twitter_minor % 2), [1], [yes], [no]))
+m4_define([maintainer_flags_default], [m4_if(m4_eval(twitter_minor % 2), [1], [yes], [no])])
 AC_ARG_ENABLE([maintainer-flags],
-              AC_HELP_STRING([--enable-maintainer-flags=@<:@no/yes@:>@],
-                             [Use strict compiler flags @<:@default=maintainer_flags_default@:>@]),,
-              enable_maintainer_flags=maintainer_flags_default)
+              [AC_HELP_STRING([--enable-maintainer-flags=@<:@no/yes@:>@],
+                              [Use strict compiler flags @<:@default=maintainer_flags_default@:>@])],
+              [],
+              [enable_maintainer_flags=maintainer_flags_default])
 
-if test "x$enable_maintainer_flags" = "xyes"; then
-  TWITTER_MAINTAINER_CFLAGS="-Werror -Wall -Wshadow -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Winit-self"
-fi
+AS_IF([test "x$enable_maintainer_flags" = "xyes" && test "x$GCC" = "xyes"]
+      [TWITTER_MAINTAINER_CFLAGS="-Werror -Wall -Wshadow -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Winit-self"]
+)
 
 AC_SUBST(TWITTER_MAINTAINER_CFLAGS)
 
