@@ -180,7 +180,8 @@ twitter_http_date_to_delta (const gchar *date)
  * @date: a timestamp coming from Twitter
  * @time_: return location for a #GTimeVal
  *
- * Converts a Twitter date into a #GTimeVal
+ * Converts a Twitter date into a #GTimeVal. The timestamp will
+ * be adjusted to the system's timezone.
  *
  * Return value: %TRUE if the conversion was successful
  */
@@ -210,9 +211,11 @@ twitter_date_to_time_val (const gchar *date,
   {
     struct tm tmp;
 
-    /* OMFG, ctime()? really? what are they? insane? and it's already been
-     * adjusted to the user settings instead of giving us the time of the
-     * status when it was sent
+    /* OMFG, ctime()? really? what are they? insane? I swear, this is
+     * what happens when you let ruby developers write public APIs
+     *
+     * what happened to ISO8601 and web datestamps? you work on the web,
+     * people!
      */
     strptime (date, "%a %b %d %T %z %Y", &tmp);
 
@@ -223,13 +226,30 @@ twitter_date_to_time_val (const gchar *date,
         struct tm now_tm;
 
         time (&now_t);
-        localtime_r (&now_t, &now_tm);
 
-        /* twitter blissfully ignores the existence of the
-         * daylight saving time
+        /* the timestamp is returned in UTC, so we need to convert
+         * it into the user's current timezone; this is the system's
+         * time zone
+         *
+         * XXX - we should have a variant function that just returns
+         * the timestamp in UTC and a convenience method inside the
+         * TwitterUser object that adjusts it to the user timezone
          */
-        if (now_tm.tm_isdst)
-          res += 3600;
+#ifdef HAVE_GMTIME_R
+        gmtime_r (&now_t, &now_tm);
+#else /* !HAVE_GMTIME_R */
+        {
+          struct tm *now_tm_p = gmtime (&now_t);
+
+          if (now_tm_p == NULL)
+            {
+              g_warning ("now_tm_p != NULL failed");
+              return FALSE;
+            }
+          else
+            memcpy (&now_tm, now_tm_p, sizeof (struct tm));
+        }
+#endif /* HAVE_GMTIME_R */
 
         time_->tv_sec = res;
         time_->tv_usec = 0;
