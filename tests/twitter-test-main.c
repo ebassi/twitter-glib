@@ -36,6 +36,8 @@ main (int argc, char *argv[])
 
   twitter_test_add ("/user/initialization", test_user_init);
   twitter_test_add ("/user/loading",        test_user_load);
+  twitter_test_add ("/user/full-parsing",   test_user_full);
+  twitter_test_add ("/user/profile-image",  test_user_profile_image);
 
   return twitter_test_run ();
 }
