@@ -171,8 +171,10 @@ gulong                twitter_client_verify_user          (TwitterClient   *clie
 void                  twitter_client_end_session          (TwitterClient   *client);
 gulong                twitter_client_show_user_from_id    (TwitterClient   *client,
                                                            const gchar     *id_or_screen_name);
+#ifndef TWITTER_DISABLE_DEPRECATED
 gulong                twitter_client_show_user_from_email (TwitterClient   *client,
-                                                           const gchar     *email);
+                                                           const gchar     *email) G_GNUC_DEPRECATED;
+#endif
 
 gulong                twitter_client_get_public_timeline  (TwitterClient   *client,
                                                            guint            since_id);

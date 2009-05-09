@@ -1801,6 +1801,8 @@ twitter_client_get_followers (TwitterClient *client,
  * with the requested #TwitterUser
  *
  * Return value: the handle of the request, or 0
+ *
+ * Deprecated: 0.9.10: Use twitter_client_show_user_from_id() instead
  */
 gulong
 twitter_client_show_user_from_email (TwitterClient *client,
