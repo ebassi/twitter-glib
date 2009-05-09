@@ -221,6 +221,10 @@ gulong                twitter_client_add_favorite         (TwitterClient   *clie
 gulong                twitter_client_remove_favorite      (TwitterClient   *client,
                                                            guint            status_id);
 
+void                  twitter_client_get_rate_limit       (TwitterClient   *client,
+                                                           gint            *limit,
+                                                           gint            *remaining);
+
 G_END_DECLS
 
 #endif /* __TWITTER_CLIENT_H__ */

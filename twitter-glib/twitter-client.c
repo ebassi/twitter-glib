@@ -102,6 +102,9 @@ struct _TwitterClientPrivate
 
   gulong last_handle_id;
 
+  gint rate_limit;
+  gint rate_limit_remaining;
+
   guint auth_complete : 1;
 };
 
@@ -113,7 +116,9 @@ enum
   PROP_PASSWORD,
   PROP_USER_AGENT,
   PROP_PROVIDER,
-  PROP_BASE_URL
+  PROP_BASE_URL,
+  PROP_MAX_REQUESTS,
+  PROP_REMAINING_REQUESTS
 };
 
 enum
@@ -236,6 +241,14 @@ twitter_client_get_property (GObject    *gobject,
       g_value_set_string (value, priv->base_url);
       break;
 
+    case PROP_MAX_REQUESTS:
+      g_value_set_int (value, priv->rate_limit);
+      break;
+
+    case PROP_REMAINING_REQUESTS:
+      g_value_set_int (value, priv->rate_limit_remaining);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -336,6 +349,20 @@ twitter_client_class_init (TwitterClientClass *klass)
                                TWITTER_DEFAULT_HOST,
                                G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_BASE_URL, pspec);
+
+  pspec = g_param_spec_int ("max-requests",
+                            "Max requests",
+                            "The amount of requests that can be performed",
+                            -1, G_MAXINT, -1,
+                            G_PARAM_READABLE);
+  g_object_class_install_property (gobject_class, PROP_MAX_REQUESTS, pspec);
+
+  pspec = g_param_spec_int ("remaining-requests",
+                            "Remaining Requests",
+                            "The available requests that can be performed",
+                            -1, G_MAXINT, -1,
+                            G_PARAM_READABLE);
+  g_object_class_install_property (gobject_class, PROP_REMAINING_REQUESTS, pspec);
 
   /**
    * TwitterClient::authenticate:
@@ -500,6 +527,40 @@ twitter_client_init (TwitterClient *client)
   priv->last_handle_id = 1;
 
   priv->provider = TWITTER_DEFAULT_PROVIDER;
+
+  priv->rate_limit = -1;
+  priv->rate_limit_remaining = -1;
+}
+
+static inline void
+twitter_client_parse_rate_limit (TwitterClient      *client,
+                                 SoupMessageHeaders *headers)
+{
+  TwitterClientPrivate *priv = client->priv;
+  const gchar *val;
+
+  if (headers == NULL)
+    return;
+
+  g_object_freeze_notify (G_OBJECT (client));
+
+  val = soup_message_headers_get (headers, "X-RateLimit-Limit");
+  if (val == NULL || *val == '\0')
+    priv->rate_limit = -1;
+  else
+    priv->rate_limit = g_ascii_strtoll (val, NULL, 10);
+
+  g_object_notify (G_OBJECT (client), "max-requests");
+
+  val = soup_message_headers_get (headers, "X-RateLimit-Remaining");
+  if (val == NULL || *val == '\0')
+    priv->rate_limit_remaining = -1;
+  else
+    priv->rate_limit_remaining = g_ascii_strtoll (val, NULL, 10);
+
+  g_object_notify (G_OBJECT (client), "remaining-requests");
+
+  g_object_thaw_notify (G_OBJECT (client));
 }
 
 typedef enum {
@@ -876,6 +937,11 @@ get_status_cb (SoupSession *session,
   TwitterClient *client = closure_get_client (closure);
   TwitterClientPrivate *priv = client->priv;
 
+  /* we want to parse them as soo as we can so we can use
+   * the values right inside the signal callbacks
+   */
+  twitter_client_parse_rate_limit (client, msg->response_headers);
+
   if (!SOUP_STATUS_IS_SUCCESSFUL (msg->status_code))
     {
       GError *error = NULL;
@@ -946,6 +1012,11 @@ verify_cb (SoupSession *session,
   VerifyClosure *closure = user_data;
   TwitterClient *client = closure_get_client (closure);
   gulong handle = closure_get_handle (closure);
+
+  /* we want to parse them as soo as we can so we can use
+   * the values right inside the signal callbacks
+   */
+  twitter_client_parse_rate_limit (client, msg->response_headers);
 
   if (!SOUP_STATUS_IS_SUCCESSFUL (msg->status_code))
     {
@@ -1122,6 +1193,11 @@ get_timeline_cb (SoupSession *session,
   gulong handle = closure_get_handle (closure);
   TwitterClient *client = closure_get_client (closure);
   TwitterClientPrivate *priv = client->priv;
+
+  /* we want to parse them as soo as we can so we can use
+   * the values right inside the signal callbacks
+   */
+  twitter_client_parse_rate_limit (client, msg->response_headers);
 
   if (!SOUP_STATUS_IS_SUCCESSFUL (msg->status_code))
     {
@@ -1339,6 +1415,11 @@ get_user_cb (SoupSession *session,
   TwitterClient *client = closure_get_client (closure);
   TwitterClientPrivate *priv = client->priv;
 
+  /* we want to parse them as soo as we can so we can use
+   * the values right inside the signal callbacks
+   */
+  twitter_client_parse_rate_limit (client, msg->response_headers);
+
   if (!SOUP_STATUS_IS_SUCCESSFUL (msg->status_code))
     {
       GError *error = NULL;
@@ -1498,6 +1579,11 @@ get_user_list_cb (SoupSession *session,
   gulong handle = closure_get_handle (closure);
   TwitterClient *client = closure_get_client (closure);
   TwitterClientPrivate *priv = client->priv;
+
+  /* we want to parse them as soo as we can so we can use
+   * the values right inside the signal callbacks
+   */
+  twitter_client_parse_rate_limit (client, msg->response_headers);
 
   if (!SOUP_STATUS_IS_SUCCESSFUL (msg->status_code))
     {
@@ -1900,4 +1986,33 @@ twitter_client_get_base_url (TwitterClient *client)
   g_return_val_if_fail (TWITTER_IS_CLIENT (client), NULL);
 
   return client->priv->base_url;
+}
+
+/**
+ * twitter_client_get_rate_limit:
+ * @client: a #TwitterClient
+ * @limit: (out): return location for the current cap on requests
+ * @remaining: (out): return location for the current remaining requests
+ *
+ * Retrieves the current state of the rate limitation that Twitter
+ * uses to avoid excessive load.
+ *
+ * If you want to monitor the rate limitation you should monitor
+ * notifications on the #TwitterClient:remaining-requests and
+ * #TwitterClient:max-requests.
+ *
+ * Since: 0.9.10
+ */
+void
+twitter_client_get_rate_limit (TwitterClient *client,
+                               gint          *limit,
+                               gint          *remaining)
+{
+  g_return_if_fail (TWITTER_IS_CLIENT (client));
+
+  if (limit)
+    *limit = client->priv->rate_limit;
+
+  if (remaining)
+    *remaining = client->priv->rate_limit_remaining;
 }
