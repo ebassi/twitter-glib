@@ -1814,7 +1814,7 @@ twitter_client_show_user_from_email (TwitterClient *client,
   g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
   g_return_val_if_fail (email != NULL, 0);
 
-  msg = twitter_api_user_show (client->priv->base_url, NULL, email);
+  msg = twitter_api_user_show (client->priv->base_url, email);
 
   clos = g_new0 (GetUserClosure, 1);
   closure_set_action (clos, USER_SHOW);
@@ -1855,7 +1855,7 @@ twitter_client_show_user_from_id (TwitterClient *client,
   g_return_val_if_fail (TWITTER_IS_CLIENT (client), 0);
   g_return_val_if_fail (id_or_screen_name != NULL, 0);
 
-  msg = twitter_api_user_show (client->priv->base_url, id_or_screen_name, NULL);
+  msg = twitter_api_user_show (client->priv->base_url, id_or_screen_name);
 
   clos = g_new0 (GetUserClosure, 1);
   closure_set_action (clos, USER_SHOW);

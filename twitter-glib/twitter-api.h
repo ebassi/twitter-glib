@@ -49,8 +49,7 @@ SoupMessage *twitter_api_friends            (const gchar *base_url,
                                              gboolean     lite);
 SoupMessage *twitter_api_featured           (const gchar *base_url);
 SoupMessage *twitter_api_user_show          (const gchar *base_url,
-                                             const gchar *user,
-                                             const gchar *email);
+                                             const gchar *user);
 SoupMessage *twitter_api_verify_credentials (const gchar *base_url);
 SoupMessage *twitter_api_end_session        (const gchar *base_url);
 SoupMessage *twitter_api_followers          (const gchar *base_url,

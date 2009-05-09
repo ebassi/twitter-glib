@@ -370,33 +370,13 @@ twitter_api_featured (const gchar *base_url)
 
 SoupMessage *
 twitter_api_user_show (const gchar *base_url,
-                       const gchar *user,
-                       const gchar *email)
+                       const gchar *user)
 {
   SoupMessage *msg;
   gchar *url;
 
-  if (user)
-    {
-      url = twitter_api_make_url (base_url, TWITTER_API_USER_SHOW_ID, user);
-      msg = soup_message_new (SOUP_METHOD_GET, url);
-    }
-  else
-    {
-      gchar *post_data;
-
-      url = twitter_api_make_url (base_url, TWITTER_API_USER_SHOW);
-
-      /* we need to encode the email correctly */
-      post_data = soup_form_encode ("email", email, NULL);
-      msg = soup_message_new (SOUP_METHOD_GET, url);
-      soup_message_set_request (msg, "application/x-www-form-urlencoded",
-                                SOUP_MEMORY_COPY,
-                                post_data, strlen (post_data));
-
-      g_free (post_data);
-    }
-
+  url = twitter_api_make_url (base_url, TWITTER_API_USER_SHOW_ID, user);
+  msg = soup_message_new (SOUP_METHOD_GET, url);
   g_free (url);
 
   return msg;
