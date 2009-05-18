@@ -269,6 +269,13 @@ twitter_client_constructed (GObject *gobject)
   priv->session_async =
     soup_session_async_new_with_options ("user-agent", user_agent, NULL);
 
+  if (g_getenv ("TWITTER_GLIB_DEBUG"))
+    {
+      SoupLogger* logger = soup_logger_new (SOUP_LOGGER_LOG_BODY, 0);
+
+      soup_session_add_feature (priv->session_async, SOUP_SESSION_FEATURE (logger));
+    }
+
 #ifdef HAVE_LIBSOUP_GNOME
   /* use the proxy support in libsoup-gnome */
   soup_session_add_feature_by_type (priv->session_async,
