@@ -19,7 +19,7 @@ m4_define([lt_age], [m4_eval(twitter_binary_age - twitter_interface_age)])
 
 m4_define([glib_req_version], [2.16])
 m4_define([json_glib_req_version], [0.6.0])
-m4_define([soup_req_version], [2.4.1])
+m4_define([soup_req_version], [2.24.0])
 
 AC_PREREQ([2.59])
 
