@@ -330,7 +330,7 @@ twitter_status_build (TwitterStatus *status,
     priv->in_reply_to_status_id = json_node_get_int (member);
 
   if (priv->user && priv->id != 0)
-    priv->url = g_strdup_printf ("%s/%s/statuses/%d",
+    priv->url = g_strdup_printf ("%s/%s/statuses/%u",
                                  TWITTER_DEFAULT_HOST,
                                  twitter_user_get_screen_name (priv->user),
                                  priv->id);
