@@ -24,7 +24,7 @@
 
 G_BEGIN_DECLS
 
-#define TWITTER_DEFAULT_HOST    "http://twitter.com"
+#define TWITTER_DEFAULT_HOST    "https://twitter.com"
 #define TWITTER_IDENTICA_HOST   "http://identi.ca/api"
 
 SoupMessage *twitter_api_public_timeline    (const gchar *base_url,
