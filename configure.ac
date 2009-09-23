@@ -142,7 +142,7 @@ AC_ARG_ENABLE([maintainer-flags],
               [],
               [enable_maintainer_flags=maintainer_flags_default])
 
-AS_IF([test "x$enable_maintainer_flags" = "xyes" && test "x$GCC" = "xyes"]
+AS_IF([test "x$enable_maintainer_flags" = "xyes" && test "x$GCC" = "xyes"],
       [TWITTER_MAINTAINER_CFLAGS="-Werror -Wall -Wshadow -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Winit-self"]
 )
 
