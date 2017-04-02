@@ -1,6 +1,11 @@
 Twitter-GLib - A library wrapping the Twitter RESTful API
 ===============================================================================
 
+**WARNING**: Twitter-GLib is unmaintained; it uses the deprecated v1 API, and
+does not support the stream API. It also does not use OAuth so it's basically
+useless for anything that requires authentication. Twitter-GLib is mostly meant
+as a historical archive.
+
 Twitter-GLib is a GObject-based library providing a wrapper around
 the RESTful API of Twitter.
 
