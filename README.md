@@ -17,24 +17,23 @@ the RESTful API of Twitter.
 
 In short, is a web-based SMS-like service.
 
-REQUIREMENTS
--------------------------------------------------------------------------------
+## REQUIREMENTS
+
 Twitter-GLib depends on:
 
   - GLib >= 2.16
   - GIO >= 2.16
   - JSON-GLib >= 0.6
   - libsoup-2.4 >= 2.4.1
-      - or -
-  - libsoup-gnome-2.4 >= 2.4.1
+    - or libsoup-gnome-2.4 >= 2.4.1
   - GdkPixbuf >= 2.0
 
-INSTALLATION
--------------------------------------------------------------------------------
+## INSTALLATION
+
 Se the INSTALL file.
 
-COPYRIGHT AND LICENSING
--------------------------------------------------------------------------------
+## COPYRIGHT AND LICENSING
+
 Twitter-GLib is released under the terms of the GNU Lesser General
 Public License version 2.1 or, at your option, any later version.
 
